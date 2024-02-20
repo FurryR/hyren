@@ -1,0 +1,46 @@
+{
+  "compilerOptions": {
+    "sourceMap": false,
+    "module": "ESNext",
+    // "noImplicitAny": true,
+    "removeComments": false /* Do not emit comments to output. */,
+    // "noEmit": true,                        /* Do not emit outputs. */
+    // "importHelpers": true,                 /* Import emit helpers from 'tslib'. */
+    // "downlevelIteration": true,            /* Provide full support for iterables in 'for-of', spread, and destructuring when targeting 'ES5' or 'ES3'. */
+    // "isolatedModules": true,               /* Transpile each file as a separate module (similar to 'ts.transpileModule'). */
+    /* Strict Type-Checking Options */
+    "strict": true /* Enable all strict type-checking options. */,
+    "strictNullChecks": true /* Enable strict null checks. */,
+    "strictFunctionTypes": true /* Enable strict checking of function types. */,
+    "strictBindCallApply": true /* Enable strict 'bind', 'call', and 'apply' methods on functions. */,
+    "strictPropertyInitialization": true /* Enable strict checking of property initialization in classes. */,
+    "noImplicitThis": true /* Raise error on 'this' expressions with an implied 'any' type. */,
+    "alwaysStrict": true /* Parse in strict mode and emit "use strict" for each source file. */,
+    /* Additional Checks */
+    "noUnusedLocals": true /* Report errors on unused locals. */,
+    "noUnusedParameters": true /* Report errors on unused parameters. */,
+    "noImplicitReturns": true /* Report error when not all code paths in function return a value. */,
+    "noFallthroughCasesInSwitch": true /* Report errors for fallthrough cases in switch statement. */,
+    /* Module Resolution Options */
+    "resolveJsonModule": true,
+    "allowJs": true,
+    // "moduleResolution": "",
+    // "esModuleInterop": true,
+    // "allowSyntheticDefaultImports": true,
+    "types": [],
+    "baseUrl": ".",
+    "paths": {
+      // "~/*": [
+      //   "./types/*"
+      // ]
+      "scratch-vm": ["./node_modules/@turbowarp/types/index.d.ts"],
+      "@turbowarp/nanolog": ["./src/log/index.cjs"]
+    },
+    "lib": ["ESNext", "DOM"],
+    "target": "ESNext",
+    "moduleResolution": "Node",
+    "outDir": "dist",
+    "declaration": true
+  },
+  "include": ["src/**/*", "scratch-vm/src/**/*", "tsup.config.ts", "package.json"]
+}

@@ -1,0 +1,55 @@
+{
+  "name": "lpp-scratch",
+  "version": "1.0.0",
+  "description": "lpp is a high-level programming language developed by @FurryR.",
+  "main": "dist/main.js",
+  "types": "./dist/index.d.ts",
+  "directories": {
+    "doc": "doc"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint ./src",
+    "lint:type": "tsc --noEmit -p ./tsconfig.json",
+    "fix": "eslint ./src --fix",
+    "build": "tsup --minify",
+    "start": "tsup && http-server ./dist -p 8080 --cors",
+    "dev": "tsup",
+    "format": "prettier ./src ./doc *.md -c -w",
+    "lint:format": "prettier ./src ./doc *.md -c"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FurryR/lpp-scratch.git"
+  },
+  "author": "FurryR",
+  "developers": [
+    "🐺 @FurryR https://github.com/FurryR - Developer, Test, Translation, Documentation",
+    "🤔 @SimonShiki https://github.com/SimonShiki - Test, Technical support",
+    "😄 @Nights https://github.com/Nightre - Technical support",
+    "🔤 @CST1229 https://github.com/CST1229 - Technical support",
+    "⭐ @DilemmaGX https://github.com/DilemmaGX - Icon artist (legacy)",
+    "🍭 @TangDo158 https://github.com/TangDo158 - Icon artist (new)",
+    "🐺 @VeroFess https://github.com/VeroFess - Technical support"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/FurryR/lpp-scratch/issues"
+  },
+  "pre-commit": [
+  ],
+  "homepage": "https://github.com/FurryR/lpp-scratch#readme",
+  "devDependencies": {
+    "@turbowarp/types": "^0.0.12",
+    "@typescript-eslint/eslint-plugin": "^6.18.1",
+    "@typescript-eslint/parser": "^6.18.1",
+    "blockly": "^10.3.0",
+    "eslint": "^8.56.0",
+    "format-message": "^6.2.4",
+    "http-server": "^14.1.1",
+    "pre-commit": "^1.2.2",
+    "prettier": "^3.2.1",
+    "tsup": "^8.0.1",
+    "typescript": "^5.3.3"
+  }
+}

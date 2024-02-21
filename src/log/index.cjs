@@ -2,7 +2,7 @@ let stat = false
 function nanolog(name) {
   return {
     info(...args) {
-      if (stat) console.log(`[🐺 hyren] ${name}:`, ...args)
+      if (stat) console.info(`[🐺 hyren] ${name}:`, ...args)
     },
     warn(...args) {
       if (stat) console.warn(`[🐺 hyren] ${name}:`, ...args)

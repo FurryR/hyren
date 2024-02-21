@@ -7,9 +7,8 @@ export default defineConfig({
   format: ['iife'],
   outDir: 'dist',
   banner: {
-    js: `
-// ==UserScript==
-// @name        hyren
+    js: `// ==UserScript==
+// @name        Hyren
 // @description Run compiler anywhere.
 // @version     1
 // @author      FurryR

@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "sourceMap": false,
-    "module": "ESNext",
+    "module": "CommonJS",
     // "noImplicitAny": true,
     "removeComments": false /* Do not emit comments to output. */,
     // "noEmit": true,                        /* Do not emit outputs. */

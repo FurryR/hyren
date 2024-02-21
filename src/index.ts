@@ -337,6 +337,12 @@ trap(vm => {
           ) {
             this.penUp({}, { target })
           }
+          extensionObject._stamp = function (
+            this: any,
+            target: VM.RenderedTarget
+          ) {
+            this.stamp({}, { target })
+          }
           break
         }
       }

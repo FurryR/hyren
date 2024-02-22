@@ -13,22 +13,13 @@ export default function extensionPen(packageObject: any) {
   ) {
     this.setPenSizeTo({ SIZE: String(size) }, { target })
   }
-  packageObject._penDown = function (
-    this: any,
-    target: VM.RenderedTarget
-  ) {
+  packageObject._penDown = function (this: any, target: VM.RenderedTarget) {
     this.penDown({}, { target })
   }
-  packageObject._penUp = function (
-    this: any,
-    target: VM.RenderedTarget
-  ) {
+  packageObject._penUp = function (this: any, target: VM.RenderedTarget) {
     this.penUp({}, { target })
   }
-  packageObject._stamp = function (
-    this: any,
-    target: VM.RenderedTarget
-  ) {
+  packageObject._stamp = function (this: any, target: VM.RenderedTarget) {
     this.stamp({}, { target })
   }
 }

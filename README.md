@@ -47,9 +47,9 @@
 
 Usually you can use hyren to boost most projects, but there are always some exceptions.
 
-1. When using Turbowarp based editor (including Turbowarp itself), you may get an error that prevents you from start your project.
+1. When using Turbowarp based editor (including Turbowarp itself), I get an error that prevents me from start your project.
    > This is because the native compiler conflicts with hyren. Disable hyren may work.
-2. When using Gandi IDE, you randomly get some error but the project works fine.
+2. When using Gandi IDE, I randomly get some error but the project works fine.
    > Just ignore these errors, your project is running fine. Hyren will fallback to interpreter when compilation fails, so it may affect performance.
 3. I use Microsoft Edge. I used hyren but it didn't boost a lot.
    > Turn off Edge's "Enhanced security mode". It disables the browser's JIT so it is extremely slow.

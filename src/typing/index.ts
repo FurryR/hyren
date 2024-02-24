@@ -9,7 +9,7 @@ export interface ExtendedThread extends VM.Thread {
   tryCompile(): void
 }
 export interface ExtendedThreadConstructor {
-  new (warpMode: boolean): VM.Thread
+  new (warpMode: boolean): ExtendedThread
   prototype: {
     tryCompile?(): void
     getId?(): string

@@ -1,4 +1,5 @@
 import { ExtendedRuntime } from '../typing'
+import Thread = require('../../scratch-vm/src/engine/thread')
 import patchThread from './thread'
 import Compatibility from '../compatibility'
 
@@ -31,6 +32,7 @@ export default function patchRuntime(vm: VM) {
     const _hasOwnProperty = Object.prototype.hasOwnProperty
     let defaultBlockPackages: any
     Object.prototype.hasOwnProperty = function () {
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
       defaultBlockPackages = this
       throw new Error('interrupted by hyren')
     }
@@ -148,5 +150,16 @@ export default function patchRuntime(vm: VM) {
       compilerOptions
     )
     this.resetAllCaches()
+  }
+  runtime.constructor.prototype.precompile = function () {
+    this.allScriptsDo((topBlockId: string, target: VM.RenderedTarget) => {
+      const topBlock = target.blocks.getBlock(topBlockId)
+      if (this.getIsHat(topBlock!.opcode)) {
+        const thread = new Thread(topBlockId)
+        thread.target = target
+        thread.blockContainer = target.blocks
+        thread.tryCompile()
+      }
+    })
   }
 }

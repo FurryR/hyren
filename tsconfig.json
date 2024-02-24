@@ -24,6 +24,7 @@
     /* Module Resolution Options */
     "resolveJsonModule": true,
     "allowJs": true,
+    "checkJs": false,
     // "moduleResolution": "",
     // "esModuleInterop": true,
     // "allowSyntheticDefaultImports": true,

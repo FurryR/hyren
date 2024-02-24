@@ -1,7 +1,7 @@
 import { defineConfig } from 'tsup'
 
 export default defineConfig({
-  name: 'lpp',
+  name: 'hyren',
   entry: ['src/index.ts'],
   target: ['esnext'],
   format: ['iife'],
@@ -12,25 +12,24 @@ export default defineConfig({
 // @description Run compiler anywhere.
 // @version     1
 // @author      FurryR
-// @include     https://scratch.mit.edu/projects/*
-// @include     https://aerfaying.com/Projects/*
-// @include     https://www.ccw.site/*
-// @include     https://gitblock.cn/Projects/*
-// @include     https://world.xiaomawang.com/*
-// @include     https://cocrea.world/*
-// @include     https://create.codelab.club/*
-// @include     https://www.scratch-cn.cn/*
-// @include     https://www.40code.com/*
-// @include     https://turbowarp.org/*
-// @include     https://codingclip.com/*
-// @include     https://editor.turbowarp.cn/*
-// @include     https://0832.ink/rc/*
-// @include     https://code.xueersi.com/scratch3/*
-// @include     https://play.creaticode.com/projects/*
-// @include     https://www.adacraft.org/*
-// @include     https://studio.penguinmod.com/*
-// @include     https://code.xueersi.com/*
-// @include     http://localhost:8601/*
+// @match       https://scratch.mit.edu/projects/*
+// @match       https://aerfaying.com/Projects/*
+// @match       https://www.ccw.site/*
+// @match       https://gitblock.cn/Projects/*
+// @match       https://world.xiaomawang.com/*
+// @match       https://cocrea.world/*
+// @match       https://create.codelab.club/*
+// @match       https://www.scratch-cn.cn/*
+// @match       https://www.40code.com/*
+// @match       https://turbowarp.org/*
+// @match       https://codingclip.com/*
+// @match       https://editor.turbowarp.cn/*
+// @match       https://0832.ink/rc/*
+// @match       https://code.xueersi.com/scratch3/*
+// @match       https://play.creaticode.com/projects/*
+// @match       https://www.adacraft.org/*
+// @match       https://studio.penguinmod.com/*
+// @match       https://code.xueersi.com/*
 // @grant       none
 // @license     MIT
 // @namespace   hyren

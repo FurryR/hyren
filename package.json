@@ -1,7 +1,7 @@
 {
-  "name": "lpp-scratch",
+  "name": "hyren",
   "version": "1.0.0",
-  "description": "lpp is a high-level programming language developed by @FurryR.",
+  "description": "A tampermonkey script to use Turbowarp compiler anywhere.",
   "main": "dist/main.js",
   "types": "./dist/index.d.ts",
   "directories": {
@@ -15,26 +15,17 @@
     "build": "tsup --minify",
     "start": "tsup && http-server ./dist -p 8080 --cors",
     "dev": "tsup",
-    "format": "prettier ./src ./doc *.md -c -w",
-    "lint:format": "prettier ./src ./doc *.md -c"
+    "format": "prettier ./src *.md -c -w",
+    "lint:format": "prettier ./src *.md -c"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/FurryR/lpp-scratch.git"
+    "url": "git+https://github.com/FurryR/hyren.git"
   },
   "author": "FurryR",
-  "developers": [
-    "🐺 @FurryR https://github.com/FurryR - Developer, Test, Translation, Documentation",
-    "🤔 @SimonShiki https://github.com/SimonShiki - Test, Technical support",
-    "😄 @Nights https://github.com/Nightre - Technical support",
-    "🔤 @CST1229 https://github.com/CST1229 - Technical support",
-    "⭐ @DilemmaGX https://github.com/DilemmaGX - Icon artist (legacy)",
-    "🍭 @TangDo158 https://github.com/TangDo158 - Icon artist (new)",
-    "🐺 @VeroFess https://github.com/VeroFess - Technical support"
-  ],
-  "license": "MIT",
+  "license": "AGPL-3.0-only",
   "bugs": {
-    "url": "https://github.com/FurryR/lpp-scratch/issues"
+    "url": "https://github.com/FurryR/hyren/issues"
   },
   "pre-commit": [
   ],

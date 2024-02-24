@@ -170,6 +170,14 @@ export default function patchThread(vm: VM) {
     }
     return res
   }
+  const _restartThread = runtime.constructor.prototype._restartThread
+  runtime.constructor.prototype._restartThread = function (thread: VM.Thread) {
+    const newThread: any = _restartThread.call(this, thread)
+    if (newThread.triedToCompile && this.compilerOptions.enabled) {
+      newThread.tryCompile()
+    }
+    return newThread
+  }
   const sequencer: VM.Sequencer = runtime.sequencer
   const _stepThread = sequencer.stepThread
   sequencer.constructor.prototype.stepThread = function stepThread(
@@ -195,7 +203,8 @@ export default function patchThread(vm: VM) {
   //     optTarget?: VM.Target
   //   ): VM.Thread[] | undefined {
   //     const _forEach = Array.prototype.forEach
-  //     Array.prototype.forEach = function (predict) {
+  //     Array.prototype.forEach = function patchedForeach(predict) {
+  //       Array.prototype.forEach = _forEach
   //       for (const [index, value] of this.entries()) {
   //         if (value?.isCompiled) {
   //           // It is quite likely that we are currently executing a block, so make sure

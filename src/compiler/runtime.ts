@@ -1,23 +1,40 @@
 import { ExtendedRuntime } from '../typing'
-import Thread = require('../../scratch-vm/src/engine/thread')
+import jsexecute = require('../../scratch-vm/src/compiler/jsexecute')
 import patchThread from './thread'
 import Compatibility from '../compatibility'
+import { IRGenerator, ScriptTreeGenerator } from 'scratch-vm/src/compiler/irgen'
+import JSGenerator = require('scratch-vm/src/compiler/jsgen')
 
 export default function patchRuntime(vm: VM) {
   const runtime = vm.runtime as ExtendedRuntime
-  if (
-    typeof runtime.compilerOptions !== 'object' ||
-    runtime.compilerOptions === null ||
-    typeof runtime.compilerOptions.enabled !== 'boolean' ||
-    typeof runtime.compilerOptions.warpTimer !== 'boolean'
+  const threadConstructor = patchThread(vm)
+  let hyrenExports = Object.assign({}, (vm as any).exports, {
+    IRGenerator,
+    ScriptTreeGenerator,
+    JSGenerator,
+    Thread: threadConstructor,
+    jsexecute,
+    i_will_not_ask_for_help_when_these_break: () =>
+      // Compatibility with Turbowarp
+      (vm as any).exports
+  })
+  Object.defineProperty(vm as any, 'exports', {
+    get() {
+      return hyrenExports
+    },
+    set(v) {
+      hyrenExports = Object.assign({}, v, hyrenExports)
+    },
+    configurable: true
+  })
+
+  runtime.constructor.prototype.emitCompileError = function (
+    target: VM.RenderedTarget,
+    error: object
   ) {
-    runtime.compilerOptions = {
-      enabled: true,
-      warpTimer: true
-    }
+    if ((runtime as any).constructor.COMPILE_ERROR)
+      this.emit((runtime as any).constructor.COMPILE_ERROR, target, error)
   }
-  patchThread(vm)
-  runtime.constructor.prototype.emitCompileError = function () {}
   if (!runtime.constructor.prototype.getAddonBlock)
     runtime.constructor.prototype.getAddonBlock = () => null
   runtime.constructor.prototype.compilerRegisterExtension = function (
@@ -141,25 +158,45 @@ export default function patchRuntime(vm: VM) {
     this.flyoutBlocks.resetCache()
     this.monitorBlocks.resetCache()
   }
-  runtime.constructor.prototype.setCompilerOptions = function (
-    compilerOptions: object
-  ) {
-    this.compilerOptions = Object.assign(
-      {},
-      this.compilerOptions,
-      compilerOptions
-    )
-    this.resetAllCaches()
-  }
   runtime.constructor.prototype.precompile = function () {
     this.allScriptsDo((topBlockId: string, target: VM.RenderedTarget) => {
       const topBlock = target.blocks.getBlock(topBlockId)
       if (this.getIsHat(topBlock!.opcode)) {
-        const thread = new Thread(topBlockId)
-        thread.target = target
-        thread.blockContainer = target.blocks
-        thread.tryCompile()
+        threadConstructor.prototype.tryCompile?.call({
+          target,
+          blockContainer: target.blocks,
+          topBlock: topBlockId
+        })
       }
+    })
+  }
+  if (
+    typeof runtime.compilerOptions !== 'object' ||
+    runtime.compilerOptions === null ||
+    typeof runtime.compilerOptions.enabled !== 'boolean' ||
+    typeof runtime.compilerOptions.warpTimer !== 'boolean'
+  ) {
+    runtime.constructor.prototype.setCompilerOptions = function (
+      compilerOptions: object
+    ) {
+      this.compilerOptions = Object.assign(
+        {},
+        this.compilerOptions,
+        compilerOptions
+      )
+      this.resetAllCaches()
+      if ((runtime as any).constructor.COMPILER_OPTIONS_CHANGED)
+        this.emit(
+          (runtime as any).constructor.COMPILER_OPTIONS_CHANGED,
+          compilerOptions
+        )
+    }
+    ;(vm as any).setCompilerOptions = function (compilerOptions: object) {
+      ;(this.runtime as any).setCompilerOptions(compilerOptions)
+    }
+    ;(runtime as any).setCompilerOptions({
+      enabled: true,
+      warpTimer: !!(vm as any)._events.workspaceUpdate
     })
   }
 }

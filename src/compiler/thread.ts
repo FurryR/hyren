@@ -1,5 +1,5 @@
-import Thread = require('../../scratch-vm/src/engine/thread')
 import compilerExecute = require('../../scratch-vm/src/compiler/jsexecute')
+import Thread = require('../../scratch-vm/src/engine/thread')
 import {
   ExtendedRuntime,
   ExtendedThread,
@@ -132,40 +132,45 @@ function patchBlockContainerInternal(
 patchBlockContainerInternal.initalized = false
 
 function patchThreadInternal(threadConstructor: ExtendedThreadConstructor) {
-  if (!patchThreadInternal.initalized) {
-    threadConstructor.prototype.tryCompile = function (this: VM.Thread) {
-      const blocks: any = this.blockContainer
-      if (!blocks._cache.compiledScripts) blocks._cache.compiledScripts = {}
-      if (!blocks._cache.compiledProcedures)
-        blocks._cache.compiledProcedures = {}
-      Thread.prototype.tryCompile.call(this)
-    }
-    threadConstructor.prototype.getId = Thread.prototype.getId
-    patchThreadInternal.initalized = true
+  threadConstructor.prototype.tryCompile = function (this: VM.Thread) {
+    const blocks: any = this.blockContainer
+    if (!blocks._cache.compiledScripts) blocks._cache.compiledScripts = {}
+    if (!blocks._cache.compiledProcedures) blocks._cache.compiledProcedures = {}
+    Thread.prototype.tryCompile.call(this)
   }
+  threadConstructor.prototype.getId = Thread.prototype.getId
 }
-patchThreadInternal.initalized = false
 
-export default function patchThread(vm: VM) {
+export default function patchThread(vm: VM): ExtendedThreadConstructor {
   const runtime = vm.runtime as ExtendedRuntime
+  // Hack to disable compliation before first compiling.
+  const thread = runtime._pushThread('', {} as VM.RenderedTarget, {
+    updateMonitor: true
+  })
+  runtime.threads.pop()
+  patchThreadInternal(thread.constructor as ExtendedThreadConstructor)
+
   const _pushThread = runtime._pushThread
   runtime.constructor.prototype._pushThread = function (
     topBlockId: string,
     target: VM.RenderedTarget,
     options: any
   ) {
+    patchBlockContainerInternal(
+      target.blocks.constructor as ExtendedBlockContainerConstructor
+    )
     const res = _pushThread.call(
       this,
       topBlockId,
       target,
       options
     ) as ExtendedThread
-    patchThreadInternal(res.constructor as ExtendedThreadConstructor)
-    patchBlockContainerInternal(
-      res.target.blocks.constructor as ExtendedBlockContainerConstructor
-    )
     // tw: compile new threads. Do not attempt to compile monitor threads.
-    if (!(options && options.updateMonitor) && this.compilerOptions?.enabled) {
+    if (
+      !(options && options.updateMonitor) &&
+      typeof res.triedToCompile === 'undefined' &&
+      this.compilerOptions?.enabled
+    ) {
       res.tryCompile()
     }
     return res
@@ -184,7 +189,6 @@ export default function patchThread(vm: VM) {
     this: VM.Sequencer,
     thread: VM.Thread
   ): void {
-    patchThreadInternal(thread.constructor as ExtendedThreadConstructor)
     patchBlockContainerInternal(
       thread.target.blocks.constructor as ExtendedBlockContainerConstructor
     )
@@ -227,4 +231,5 @@ export default function patchThread(vm: VM) {
   //     }
   //   }
   // }
+  return thread.constructor as ExtendedThreadConstructor
 }

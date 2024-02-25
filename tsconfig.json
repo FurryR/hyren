@@ -35,7 +35,7 @@
       //   "./types/*"
       // ]
       "scratch-vm": ["./node_modules/@turbowarp/types/index.d.ts"],
-      "@turbowarp/nanolog": ["./src/log/index.cjs"]
+      "@turbowarp/nanolog": ["src/log/tw.cjs"]
     },
     "lib": ["ESNext", "DOM"],
     "target": "ESNext",
@@ -43,5 +43,10 @@
     "outDir": "dist",
     "declaration": true
   },
-  "include": ["src/**/*", "scratch-vm/src/**/*", "tsup.config.ts", "package.json"]
+  "include": [
+    "src/**/*",
+    "scratch-vm/src/**/*",
+    "tsup.config.ts",
+    "package.json"
+  ]
 }

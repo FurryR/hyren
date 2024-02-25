@@ -27,8 +27,7 @@
   "bugs": {
     "url": "https://github.com/FurryR/hyren/issues"
   },
-  "pre-commit": [
-  ],
+  "pre-commit": [],
   "homepage": "https://github.com/FurryR/lpp-scratch#readme",
   "devDependencies": {
     "@turbowarp/types": "^0.0.12",

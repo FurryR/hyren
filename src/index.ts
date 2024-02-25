@@ -1,9 +1,7 @@
-import nanolog = require('./log/index.cjs')
+import { MainLog } from './log'
 import * as VM from 'scratch-vm'
 
 import patchRuntime from './compiler/runtime'
-nanolog.enable()
-const MainLog = nanolog('main')
 
 /**
  * Trap to get Virtual Machine instance.

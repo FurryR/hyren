@@ -1,5 +1,6 @@
 import { MainLog } from './log'
 import * as VM from 'scratch-vm'
+import { version } from '../package.json'
 
 import patchRuntime from './compiler/runtime'
 
@@ -16,13 +17,15 @@ export function trap(callback: (vm: VM) => void) {
       Object.prototype.hasOwnProperty.call(self, 'editingTarget') &&
       Object.prototype.hasOwnProperty.call(self, 'runtime')
     ) {
-      MainLog.info(
-        'Hyren is based on Turbowarp compiler. Check https://turbowarp.com/editor for more details.'
-      )
-      MainLog.info(
+      MainLog.groupCollapsed(`🐺 Hyren v${version}`)
+      console.log(
         'Copyright (c) 2024 FurryR. Visit my profile at https://github.com/FurryR'
       )
-      MainLog.info('Repository URL: https://github.com/FurryR/hyren')
+      console.log(
+        'Hyren is based on Turbowarp compiler. Check https://turbowarp.com/editor for more details.'
+      )
+      console.log('GitHub Repository: https://github.com/FurryR/hyren')
+      MainLog.groupEnd()
       Function.prototype.bind = oldBind
       callback(self as VM)
       return oldBind.call(this, self, ...args)

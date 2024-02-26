@@ -69,6 +69,12 @@ trap(vm => {
       }
     },
     Options: {
+      hires(flag: unknown) {
+        if (!vmInstance) vmInstanceAssert()
+        if (flag === undefined)
+          return (vmInstance.runtime as any).renderer?.useHighQualityRender
+        ;(vmInstance.runtime as any).renderer?.setUseHighQualityRender(!!flag)
+      },
       fps(num: unknown) {
         if (!vmInstance) vmInstanceAssert()
         if (num === undefined)

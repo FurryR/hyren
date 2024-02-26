@@ -1,13 +1,56 @@
 import { ExtendedRuntime } from '../typing'
 import jsexecute = require('../../scratch-vm/src/compiler/jsexecute')
 import patchThread from './thread'
+import patchRenderer from './renderer'
+import patchIO from './io'
+import patchTarget from './target'
 import Compatibility from '../compatibility'
 import { IRGenerator, ScriptTreeGenerator } from 'scratch-vm/src/compiler/irgen'
 import JSGenerator = require('scratch-vm/src/compiler/jsgen')
 
 export default function patchRuntime(vm: VM) {
   const runtime = vm.runtime as ExtendedRuntime
+  if (!(vm.runtime.constructor as any).RUNTIME_OPTIONS_CHANGED)
+    Object.defineProperty(vm.runtime.constructor, 'RUNTIME_OPTIONS_CHANGED', {
+      value: 'RUNTIME_OPTIONS_CHANGED',
+      writable: false
+    })
+  if (!(vm.runtime.constructor as any).COMPILE_ERROR)
+    Object.defineProperty(vm.runtime.constructor, 'COMPILE_ERROR', {
+      value: 'COMPILE_ERROR',
+      writable: false
+    })
+  if (!(vm.runtime.constructor as any).COMPILER_OPTIONS_CHANGED)
+    Object.defineProperty(vm.runtime.constructor, 'COMPILER_OPTIONS_CHANGED', {
+      value: 'COMPILER_OPTIONS_CHANGED',
+      writable: false
+    })
+  vm.runtime.constructor.prototype.setRuntimeOptions = function (
+    runtimeOptions: any
+  ) {
+    this.runtimeOptions = Object.assign({}, this.runtimeOptions, runtimeOptions)
+    this.emit((vm.runtime.constructor as any).COMPILER_OPTIONS_CHANGED, this.runtimeOptions)
+    if (this.renderer) {
+      this.renderer.offscreenTouching = !this.runtimeOptions.fencing
+    }
+  }
+  ;(vm.runtime as any).setRuntimeOptions({
+    maxClones: (vm.runtime.constructor as any).MAX_CLONES,
+    miscLimits: true,
+    fencing: true
+  })
+  vm.runtime.constructor.prototype.clonesAvailable = function () {
+    return this._cloneCounter < this.runtimeOptions.maxClones
+  }
+  Object.defineProperty(vm.runtime, 'compatibilityMode', {
+    get() {
+      return (vm.runtime as any).frameLoop?.framerate === 30
+    }
+  })
   const threadConstructor = patchThread(vm)
+  patchRenderer(vm)
+  patchTarget(vm)
+  patchIO(vm)
   let hyrenExports = Object.assign({}, (vm as any).exports, {
     IRGenerator,
     ScriptTreeGenerator,
@@ -32,8 +75,7 @@ export default function patchRuntime(vm: VM) {
     target: VM.RenderedTarget,
     error: object
   ) {
-    if ((runtime as any).constructor.COMPILE_ERROR)
-      this.emit((runtime as any).constructor.COMPILE_ERROR, target, error)
+    this.emit((runtime as any).constructor.COMPILE_ERROR, target, error)
   }
   if (!runtime.constructor.prototype.getAddonBlock)
     runtime.constructor.prototype.getAddonBlock = () => null
@@ -58,6 +100,7 @@ export default function patchRuntime(vm: VM) {
       Object.prototype.hasOwnProperty = _hasOwnProperty
     } catch (e) {
       Object.prototype.hasOwnProperty = _hasOwnProperty
+      // Object.assign(defaultBlockPackages, twBlocks)
       for (const packageName in defaultBlockPackages) {
         if (
           Object.prototype.hasOwnProperty.call(
@@ -185,11 +228,10 @@ export default function patchRuntime(vm: VM) {
         compilerOptions
       )
       this.resetAllCaches()
-      if ((runtime as any).constructor.COMPILER_OPTIONS_CHANGED)
-        this.emit(
-          (runtime as any).constructor.COMPILER_OPTIONS_CHANGED,
-          compilerOptions
-        )
+      this.emit(
+        (runtime as any).constructor.COMPILER_OPTIONS_CHANGED,
+        compilerOptions
+      )
     }
     ;(vm as any).setCompilerOptions = function (compilerOptions: object) {
       ;(this.runtime as any).setCompilerOptions(compilerOptions)

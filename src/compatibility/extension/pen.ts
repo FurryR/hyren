@@ -1,4 +1,5 @@
 export default function extensionPen(packageObject: any) {
+  const Scratch3PenBlocks = packageObject.constructor
   if (!packageObject._penDown)
     packageObject._penDown = function (this: any, target: VM.RenderedTarget) {
       this.penDown({}, { target })
@@ -67,4 +68,14 @@ export default function extensionPen(packageObject: any) {
     packageObject._penUp = function (this: any, target: VM.RenderedTarget) {
       this.penUp({}, { target })
     }
+  const _clampPenSize = Scratch3PenBlocks.prototype._clampPenSize
+  Scratch3PenBlocks.prototype._clampPenSize = function (requestedSize: number) {
+    if (
+      (this.runtime.renderer && this.runtime.renderer.useHighQualityRender) ||
+      !this.runtime.runtimeOptions.miscLimits
+    ) {
+      return Math.max(0, requestedSize)
+    }
+    return _clampPenSize.call(this, requestedSize)
+  }
 }

@@ -29,8 +29,8 @@ jobs:
           cache: 'npm'
       - name: 👾 Fetching Turbowarp
         run: git submodule update --init
-      - name: 🔽 Install dependencies
-        run: npm ci
+      - name: 🔽 Install & Build dependencies
+        run: cd scratch-render && npm ci && npm run build && cd .. && npm ci
       - name: 🛠️ Build hyren (debug)
         run: npm run dev --if-present
       - name: ✅ Upload debug artifacts

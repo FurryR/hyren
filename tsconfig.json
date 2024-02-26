@@ -28,13 +28,14 @@
     // "moduleResolution": "",
     // "esModuleInterop": true,
     // "allowSyntheticDefaultImports": true,
-    "types": [],
+    "types": ["node"],
     "baseUrl": ".",
     "paths": {
       // "~/*": [
       //   "./types/*"
       // ]
       "scratch-vm": ["./node_modules/@turbowarp/types/index.d.ts"],
+      "scratch-renderer": ["./node_modules/@turbowarp/types/index.d.ts"],
       "@turbowarp/nanolog": ["src/log/tw.cjs"]
     },
     "lib": ["ESNext", "DOM"],

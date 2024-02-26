@@ -1,3 +1,5 @@
 [submodule "scratch-vm"]
 	path = scratch-vm
 	url = https://github.com/TurboWarp/scratch-vm.git
+[submodule "scratch-render"]
+	path = scratch-render

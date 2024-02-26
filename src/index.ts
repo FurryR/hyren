@@ -23,7 +23,7 @@ export function trap(callback: (vm: VM) => void) {
         'Copyright (c) 2024 FurryR. Visit my profile at https://github.com/FurryR'
       )
       console.log(
-        'Hyren is based on Turbowarp compiler. Check https://turbowarp.com/editor for more details.'
+        'Hyren is based on Turbowarp compiler. Check https://turbowarp.org/editor for more details.'
       )
       console.log('GitHub Repository: https://github.com/FurryR/hyren')
       MainLog.groupEnd()

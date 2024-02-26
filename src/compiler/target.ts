@@ -58,7 +58,6 @@ export default function patchTarget(vm: VM) {
     //       : [x, y]
     //     this.x = position[0]
     //     this.y = position[1]
-
     //     this.renderer.updateDrawablePosition(this.drawableID, position)
     //     if (this.visible) {
     //       this.emitVisualChange()

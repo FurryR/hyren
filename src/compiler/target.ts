@@ -2,6 +2,11 @@ import MathUtil = require('scratch-vm/src/util/math-util')
 export default function patchTarget(vm: VM) {
   function onReady(target: VM.Target) {
     const Target = target.constructor
+    Target.prototype.emitVisualChange = function () {
+      if (this.onTargetVisualChange) {
+        this.onTargetVisualChange(this)
+      }
+    }
     Target.prototype.setSize = function (size: number) {
       // used by compiler
       if (this.isStage) {

@@ -29,7 +29,10 @@ export default function patchRuntime(vm: VM) {
     runtimeOptions: any
   ) {
     this.runtimeOptions = Object.assign({}, this.runtimeOptions, runtimeOptions)
-    this.emit((vm.runtime.constructor as any).COMPILER_OPTIONS_CHANGED, this.runtimeOptions)
+    this.emit(
+      (vm.runtime.constructor as any).COMPILER_OPTIONS_CHANGED,
+      this.runtimeOptions
+    )
     if (this.renderer) {
       this.renderer.offscreenTouching = !this.runtimeOptions.fencing
     }

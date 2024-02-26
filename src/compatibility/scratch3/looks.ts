@@ -1,4 +1,4 @@
-import MathUtil = require('../../../scratch-vm/src/util/math-util')
+import MathUtil = require('scratch-vm/src/util/math-util')
 
 export default function scratch3Looks(packageObject: any) {
   if (!packageObject.clampEffect)

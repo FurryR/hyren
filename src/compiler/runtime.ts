@@ -1,5 +1,5 @@
 import { ExtendedRuntime } from '../typing'
-import jsexecute = require('../../scratch-vm/src/compiler/jsexecute')
+import compilerExecute = require('../../scratch-vm/src/compiler/jsexecute')
 import patchThread from './thread'
 import patchRenderer from './renderer'
 import patchIO from './io'
@@ -59,7 +59,8 @@ export default function patchRuntime(vm: VM) {
     ScriptTreeGenerator,
     JSGenerator,
     Thread: threadConstructor,
-    jsexecute,
+    compilerExecute,
+    jsexecute: compilerExecute,
     i_will_not_ask_for_help_when_these_break: () =>
       // Compatibility with Turbowarp
       (vm as any).exports
@@ -216,29 +217,35 @@ export default function patchRuntime(vm: VM) {
       }
     })
   }
+  runtime.constructor.prototype.setCompilerOptions = function (
+    compilerOptions: object
+  ) {
+    if (
+      typeof runtime.compilerOptions === 'object' &&
+      runtime.compilerOptions !== null
+    )
+      Object.assign(this.compilerOptions, compilerOptions)
+    else
+      this.compilerOptions = Object.assign(
+        {},
+        this.compilerOptions,
+        compilerOptions
+      )
+    this.resetAllCaches()
+    this.emit(
+      (runtime as any).constructor.COMPILER_OPTIONS_CHANGED,
+      compilerOptions
+    )
+  }
+  ;(vm as any).setCompilerOptions = function (compilerOptions: object) {
+    ;(this.runtime as any).setCompilerOptions(compilerOptions)
+  }
   if (
     typeof runtime.compilerOptions !== 'object' ||
     runtime.compilerOptions === null ||
     typeof runtime.compilerOptions.enabled !== 'boolean' ||
     typeof runtime.compilerOptions.warpTimer !== 'boolean'
   ) {
-    runtime.constructor.prototype.setCompilerOptions = function (
-      compilerOptions: object
-    ) {
-      this.compilerOptions = Object.assign(
-        {},
-        this.compilerOptions,
-        compilerOptions
-      )
-      this.resetAllCaches()
-      this.emit(
-        (runtime as any).constructor.COMPILER_OPTIONS_CHANGED,
-        compilerOptions
-      )
-    }
-    ;(vm as any).setCompilerOptions = function (compilerOptions: object) {
-      ;(this.runtime as any).setCompilerOptions(compilerOptions)
-    }
     ;(runtime as any).setCompilerOptions({
       enabled: true,
       warpTimer: !!(vm as any)._events.workspaceUpdate

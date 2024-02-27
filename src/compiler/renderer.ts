@@ -207,6 +207,10 @@ export default function patchRenderer(vm: VM) {
       this.emit((vm.runtime.constructor as any).RUNTIME_STARTED)
     }
     const renderer = vm.runtime.renderer
+    if ((renderer as any)._gandiShaderManager) {
+      // you won gandi, i will keep your shader manager.
+      return
+    }
     const newRenderer: RenderWebGL = new (RenderWebGL as any)(
       renderer.canvas,
       renderer._xLeft,
@@ -214,24 +218,19 @@ export default function patchRenderer(vm: VM) {
       renderer._yBottom,
       renderer._yTop
     )
+    renderer.resize = newRenderer.resize.bind(newRenderer)
     vm.runtime.attachRenderer(newRenderer)
-    newRenderer.canvas.addEventListener('resize', () => {
-      console.log('resize', newRenderer.canvas.width, newRenderer.canvas.height)
-      newRenderer.resize(newRenderer.canvas.width, newRenderer.canvas.height)
-    })
   }
   if (vm.runtime.renderer) {
     onReady()
   } else {
-    let renderer: RenderWebGL | undefined
-    Object.defineProperty(vm.runtime, 'renderer', {
-      get: () => renderer,
-      set: v => {
-        if (!renderer) {
-          renderer = v
-          onReady()
-        } else renderer = v
-      }
-    })
+    const _attachRenderer = vm.runtime.constructor.prototype.attachRenderer
+    vm.runtime.constructor.prototype.attachRenderer = function (
+      renderer: RenderWebGL
+    ) {
+      vm.runtime.constructor.prototype.attachRenderer = _attachRenderer
+      _attachRenderer.call(this, renderer)
+      onReady()
+    }
   }
 }

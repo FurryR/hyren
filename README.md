@@ -58,6 +58,25 @@ Usually you can use hyren to boost most projects, but there are always some exce
 
 **⚠️ WARNING:** make sure you have read [**Compatibility**](#🛠️-compatibility) section before you installed.
 
+## 📄 Reference
+
+- `Hyren.Compiler.set(flag?: boolean)`  
+  Enable/Disable compiler. If flag is not specified, returns current status. Defaults to `true`.
+- `Hyren.Compiler.warp(flag?: boolean)`  
+  Enable/Disable compiler warp timer. If flag is not specified, returns current status. If you are using editor, it is set to `true`, otherwise it is set to `false` at first.
+- `Hyren.Interpolation.set(flag?: boolean)`  
+  Enable/Disable interpolation. If flag is not specified, returns current status. Defaults to `false`.
+- `Hyren.Options.hires(flag?: boolean)`  
+  Enable/Disable high quality renderer (aka `HQPen` or `High quality pen`). If flag is not specified, returns current status. Defaults to `false`.
+- `Hyren.Options.fps(num?: number)`  
+  Set framerate to `num`. The allowed framerate range is `[0,250]`. `0` is a special value which means **"matching device screen refresh rate"**. If num is not specified, returns current specified framerate. Defaults to `30`.
+- `Hyren.Options.maxClones(num?: number)`  
+  Set max clone limit to `num`. If num is not specified, returns current specified counter. Defaults to `300`.
+- `Hyren.Options.fencing(flag?: boolean)`  
+  Set whether to enable fencing check. If flag is not specified, returns current status. Defaults to `true`.
+- `Hyren.Options.miscLimit(flag?: boolean)`  
+  Set whether to enable miscellaneous limits presented by original Scratch. If flag is not specified, returns current status. Defaults to `true`.
+
 ## ⚡ Performance
 
 ⚡ Benchmark using: https://scratch.mit.edu/projects/441947766/

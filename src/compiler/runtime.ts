@@ -95,14 +95,15 @@ export default function patchRuntime(vm: VM) {
           return Reflect.get(target, p, receiver)
         },
         set(target, p, newValue, receiver) {
-          if (
-            p === 'status' &&
-            newValue === (threadConstructor as any).STATUS_RUNNING &&
-            !isPromiseWaitOrYieldTick
-          ) {
-            return true
-          } else {
-            isPromiseWaitOrYieldTick = true
+          if (p === 'status') {
+            if (
+              newValue === (threadConstructor as any).STATUS_RUNNING &&
+              !isPromiseWaitOrYieldTick
+            ) {
+              return true
+            } else if (newValue !== (threadConstructor as any).STATUS_YIELD) {
+              isPromiseWaitOrYieldTick = true
+            }
           }
           return Reflect.set(target, p, newValue, receiver)
         }

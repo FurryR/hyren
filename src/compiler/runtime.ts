@@ -1,4 +1,4 @@
-import { ExtendedRuntime } from '../typing'
+import { ExtendedRuntime, ExtendedThread } from '../typing'
 import compilerExecute = require('../../scratch-vm/src/compiler/jsexecute')
 import patchThread from './thread'
 import patchRenderer from './renderer'
@@ -9,6 +9,11 @@ import { IRGenerator, ScriptTreeGenerator } from 'scratch-vm/src/compiler/irgen'
 import JSGenerator = require('scratch-vm/src/compiler/jsgen')
 
 export default function patchRuntime(vm: VM) {
+  class HyrenError extends Error {
+    constructor() {
+      super('Interrupted by Hyren')
+    }
+  }
   const runtime = vm.runtime as ExtendedRuntime
   if (!(vm.runtime.constructor as any).RUNTIME_OPTIONS_CHANGED)
     Object.defineProperty(vm.runtime.constructor, 'RUNTIME_OPTIONS_CHANGED', {
@@ -60,6 +65,56 @@ export default function patchRuntime(vm: VM) {
     JSGenerator,
     Thread: threadConstructor,
     compilerExecute,
+    execute: (seq: VM.Sequencer, thread: ExtendedThread) => {
+      const currentStack = thread.peekStack()
+      let isPromiseWaitOrYieldTick = false
+      const proxy = new Proxy(thread, {
+        get(target, p, receiver) {
+          if (p === 'isCompiled') return false // Force to run in interpreter.
+          if (p === 'peekStack') {
+            return () => currentStack
+          }
+          if (p === 'peekStackFrame') {
+            const _peekStackFrame = Reflect.get(target, p, receiver)
+            return function (this: VM.Thread) {
+              const result = _peekStackFrame.call(this)
+              if (!result) return result
+              return new Proxy(result, {
+                get(target, p, receiver) {
+                  if (p === 'warpMode') return false // Disables warp mode.
+                  return Reflect.get(target, p, receiver)
+                }
+              })
+            }
+          }
+          if (p === 'goToNextBlock') {
+            return () => {
+              throw new HyrenError()
+            }
+          }
+          return Reflect.get(target, p, receiver)
+        },
+        set(target, p, newValue, receiver) {
+          if (
+            p === 'status' &&
+            newValue === (threadConstructor as any).STATUS_RUNNING &&
+            !isPromiseWaitOrYieldTick
+          ) {
+            return true
+          } else {
+            isPromiseWaitOrYieldTick = true
+          }
+          return Reflect.set(target, p, newValue, receiver)
+        }
+      })
+      try {
+        seq.stepThread(proxy)
+      } catch (e) {
+        if (!(e instanceof HyrenError)) throw e
+      } finally {
+        if (seq.activeThread) seq.activeThread = thread
+      }
+    },
     jsexecute: compilerExecute,
     i_will_not_ask_for_help_when_these_break: () =>
       // Compatibility with Turbowarp
@@ -97,13 +152,14 @@ export default function patchRuntime(vm: VM) {
     Object.prototype.hasOwnProperty = function () {
       // eslint-disable-next-line @typescript-eslint/no-this-alias
       defaultBlockPackages = this
-      throw new Error('interrupted by hyren')
+      throw new HyrenError()
     }
     try {
       _registerBlockPackages.call(this)
       Object.prototype.hasOwnProperty = _hasOwnProperty
     } catch (e) {
       Object.prototype.hasOwnProperty = _hasOwnProperty
+      if (!(e instanceof HyrenError)) throw e
       // Object.assign(defaultBlockPackages, twBlocks)
       for (const packageName in defaultBlockPackages) {
         if (
@@ -189,6 +245,129 @@ export default function patchRuntime(vm: VM) {
       this.resetCache()
     return _blocklyListen.call(this, e)
   }
+  if (runtime.constructor.prototype.allScriptsByOpcodeDo) {
+    const _startHats = runtime.constructor.prototype.startHats
+    runtime.constructor.prototype.startHats = function (
+      requestedHatOpcode: string,
+      optMatchFields?: Record<string, string>,
+      optTarget?: VM.Target
+    ) {
+      const _forEach = Array.prototype.forEach
+      Array.prototype.forEach = function (callbackfn, thisArg) {
+        Array.prototype.forEach = _forEach
+        for (const [index, value] of this.entries()) {
+          if (value?.isCompiled && value?.executableHat) {
+            // It is quite likely that we are currently executing a block, so make sure
+            // that we leave the compiler's state intact at the end.
+            compilerExecute.saveGlobalState()
+            compilerExecute(value)
+            compilerExecute.restoreGlobalState()
+          } else callbackfn.call(thisArg, value, index, this)
+        }
+      }
+      try {
+        return _startHats.call(
+          this,
+          requestedHatOpcode,
+          optMatchFields,
+          optTarget
+        )
+      } finally {
+        Array.prototype.forEach = _forEach
+      }
+    }
+  }
+  // runtime.constructor.prototype.startHats = function (
+  //   requestedHatOpcode: string,
+  //   optMatchFields?: Record<string, string>,
+  //   optTarget?: VM.Target
+  // ) {
+  //   if (!Object.prototype.hasOwnProperty.call(this._hats, requestedHatOpcode)) {
+  //     // No known hat with this opcode.
+  //     return
+  //   }
+  //   const instance = this
+  //   const newThreads: VM.Thread[] = []
+  //   // Look up metadata for the relevant hat.
+  //   const hatMeta = instance._hats[requestedHatOpcode]
+
+  //   for (const opts in optMatchFields) {
+  //     if (!Object.prototype.hasOwnProperty.call(optMatchFields, opts)) continue
+  //     optMatchFields[opts] = optMatchFields[opts].toUpperCase()
+  //   }
+
+  //   // tw: By assuming that all new threads will not interfere with eachother, we can optimize the loops
+  //   // inside the allScriptsByOpcodeDo callback below.
+  //   const startingThreadListLength = this.threads.length
+
+  //   // Consider all scripts, looking for hats with opcode `requestedHatOpcode`.
+  //   this.allScriptsByOpcodeDo(
+  //     requestedHatOpcode,
+  //     (script: any, target: VM.Target) => {
+  //       const { blockId: topBlockId, fieldsOfInputs: hatFields } = script
+
+  //       // Match any requested fields.
+  //       // For example: ensures that broadcasts match.
+  //       // This needs to happen before the block is evaluated
+  //       // (i.e., before the predicate can be run) because "broadcast and wait"
+  //       // needs to have a precise collection of started threads.
+  //       for (const matchField in optMatchFields) {
+  //         if (hatFields[matchField].value !== optMatchFields[matchField]) {
+  //           // Field mismatch.
+  //           return
+  //         }
+  //       }
+
+  //       if (hatMeta.restartExistingThreads) {
+  //         // If `restartExistingThreads` is true, we should stop
+  //         // any existing threads starting with the top block.
+  //         // hyren: use `this.threads` instead of `this.threadMap` as non-Turbowarp Scratch does not have it.
+  //         const existingThread = this.threads.find(
+  //           (v: any) => v.target === target && v.topBlock === topBlockId
+  //         )
+  //         if (existingThread) {
+  //           newThreads.push(this._restartThread(existingThread))
+  //           return
+  //         }
+  //       } else {
+  //         // If `restartExistingThreads` is false, we should
+  //         // give up if any threads with the top block are running.
+  //         for (let j = 0; j < startingThreadListLength; j++) {
+  //           if (
+  //             this.threads[j].target === target &&
+  //             this.threads[j].topBlock === topBlockId &&
+  //             // stack click threads and hat threads can coexist
+  //             !this.threads[j].stackClick &&
+  //             this.threads[j].status !== (threadConstructor as any).STATUS_DONE
+  //           ) {
+  //             // Some thread is already running.
+  //             return
+  //           }
+  //         }
+  //       }
+  //       // Start the thread with this top block.
+  //       newThreads.push(this._pushThread(topBlockId, target))
+  //     },
+  //     optTarget
+  //   )
+  //   // For compatibility with Scratch 2, edge triggered hats need to be processed before
+  //   // threads are stepped. See ScratchRuntime.as for original implementation
+  //   newThreads.forEach((thread: any) => {
+  //     if (thread.isCompiled) {
+  //       if (thread.executableHat) {
+  //         // It is quite likely that we are currently executing a block, so make sure
+  //         // that we leave the compiler's state intact at the end.
+  //         compilerExecute.saveGlobalState()
+  //         compilerExecute(thread)
+  //         compilerExecute.restoreGlobalState()
+  //       }
+  //     } else {
+  //       execute(this.sequencer, thread)
+  //       thread.goToNextBlock()
+  //     }
+  //   })
+  //   return newThreads
+  // }
   const _resetCache = runtime.flyoutBlocks.constructor.prototype.resetCache
   runtime.flyoutBlocks.constructor.prototype.resetCache = function () {
     _resetCache.call(this)

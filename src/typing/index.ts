@@ -8,6 +8,7 @@ export interface ExtendedRuntime extends VM.Runtime {
 export interface ExtendedThread extends VM.Thread {
   tryCompile(): void
   triedToCompile?: boolean
+  isCompiled?: boolean
 }
 export interface ExtendedThreadConstructor {
   new (warpMode: boolean): ExtendedThread

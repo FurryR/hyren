@@ -71,7 +71,7 @@ const l10n: Record<string, Record<string, string>> = {
     'hyren.ghrepo':
       'GitHub 仓库: https://github.com/FurryR/hyren。Hyren 以 AGPL-3.0 开源协议授权。',
     'hyren.help':
-      '您可以使用全局对象 `Hyren` 来调整 Hyren 的各种设定。欲知更多，请访问 https://github.com/FurryR/hyren/blob/main/README_zh-CN.md#-文档。',
+      '您可以使用全局对象 `Hyren` 来调整 Hyren 的各种设定。欲知更多，请访问 https://github.com/FurryR/hyren/blob/main/README_zh-CN.md#-文档 。',
     'hyren.compiler.enabled': '已启用编译器。',
     'hyren.compiler.disabled': '已禁用编译器。',
     'hyren.warp.enabled': '已启用循环计时器。(⚠️ 可能会影响性能)',

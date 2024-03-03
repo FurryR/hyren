@@ -78,9 +78,9 @@
   启用/禁用角色边缘检测。如果 flag 未被指定，返回当前的状态。默认为 `true`。
 - `Hyren.Options.miscLimit(flag?: boolean)`  
   启用/禁用原版 Scratch 的其它限制。如果 flag 未被指定，返回当前的状态。默认为 `true`。
-- `Hyren.Options.size(width?: number, height?: number)`
+- `Hyren.Options.size(width?: number, height?: number)`  
   设置舞台大小。如果 width 和 height 都未被指定，返回当前状态。否则，将设置舞台的宽/高并对未指定的那部分保持原来的值。
-- `Hyren.save()`
+- `Hyren.save()`  
   保存设置到项目。兼容 Turbowarp。
 
 ## ⚡ 性能

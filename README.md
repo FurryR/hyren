@@ -78,9 +78,9 @@ Usually you can use hyren to boost most projects, but there are always some exce
   Enable/Disable fencing check. If flag is not specified, returns current status. Defaults to `true`.
 - `Hyren.Options.miscLimit(flag?: boolean)`  
   Enable/Disable miscellaneous limits presented by original Scratch. If flag is not specified, returns current status. Defaults to `true`.
-- `Hyren.Options.size(width?: number, height?: number)`
+- `Hyren.Options.size(width?: number, height?: number)`  
   Set stage size. If both width and height are not specified, returns current status. Otherwise, set stage width/height while keeping the unspecified one.
-- `Hyren.save()`
+- `Hyren.save()`  
   Save settings to the project. Compatible with Turbowarp.
 
 ## ⚡ Performance

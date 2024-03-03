@@ -29,14 +29,8 @@ export default function patchTarget(vm: VM) {
           : 0
         const maxScale = fencing
           ? Math.min(
-              (1.5 *
-                (this.runtime.stageWidth ??
-                  (vm.runtime.constructor as any).STAGE_WIDTH)) /
-                origW,
-              (1.5 *
-                (this.runtime.stageHeight ??
-                  (vm.runtime.constructor as any).STAGE_HEIGHT)) /
-                origH
+              (1.5 * this.runtime.stageWidth) / origW,
+              (1.5 * this.runtime.stageHeight) / origH
             )
           : Infinity
         this.size = MathUtil.clamp(size / 100, minScale, maxScale) * 100

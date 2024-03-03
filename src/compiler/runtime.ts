@@ -1,4 +1,7 @@
 import { ExtendedRuntime, ExtendedThread } from '../typing'
+import * as ExtendedJSON from '@turbowarp/json'
+import { formatMessage } from 'src/l10n'
+import { MainLog, VMLog } from 'src/log'
 import compilerExecute = require('../../scratch-vm/src/compiler/jsexecute')
 import patchThread from './thread'
 import patchRenderer from './renderer'
@@ -7,9 +10,10 @@ import patchTarget from './target'
 import Compatibility from '../compatibility'
 import { IRGenerator, ScriptTreeGenerator } from 'scratch-vm/src/compiler/irgen'
 import JSGenerator = require('scratch-vm/src/compiler/jsgen')
+import uid = require('scratch-vm/src//util/uid')
 
 export default function patchRuntime(vm: VM) {
-  class HyrenError extends Error {
+  class HyrenInterrupt extends Error {
     constructor() {
       super('Interrupted by Hyren')
     }
@@ -30,12 +34,22 @@ export default function patchRuntime(vm: VM) {
       value: 'COMPILER_OPTIONS_CHANGED',
       writable: false
     })
+  if (!(vm.runtime.constructor as any).TURBO_MODE_ON)
+    Object.defineProperty(vm.runtime.constructor, 'TURBO_MODE_ON', {
+      value: 'TURBO_MODE_ON',
+      writable: false
+    })
+  if (!(vm.runtime.constructor as any).TURBO_MODE_OFF)
+    Object.defineProperty(vm.runtime.constructor, 'TURBO_MODE_OFF', {
+      value: 'TURBO_MODE_OFF',
+      writable: false
+    })
   vm.runtime.constructor.prototype.setRuntimeOptions = function (
     runtimeOptions: any
   ) {
     this.runtimeOptions = Object.assign({}, this.runtimeOptions, runtimeOptions)
     this.emit(
-      (vm.runtime.constructor as any).COMPILER_OPTIONS_CHANGED,
+      (vm.runtime.constructor as any).RUNTIME_OPTIONS_CHANGED,
       this.runtimeOptions
     )
     if (this.renderer) {
@@ -70,11 +84,11 @@ export default function patchRuntime(vm: VM) {
       let isPromiseWaitOrYieldTick = false
       const proxy = new Proxy(thread, {
         get(target, p, receiver) {
-          if (p === 'isCompiled') return false // Force to run in interpreter.
-          if (p === 'peekStack') {
+          if (p === 'isCompiled')
+            return false // Force to run in interpreter.
+          else if (p === 'peekStack') {
             return () => currentStack
-          }
-          if (p === 'peekStackFrame') {
+          } else if (p === 'peekStackFrame') {
             const _peekStackFrame = Reflect.get(target, p, receiver)
             return function (this: VM.Thread) {
               const result = _peekStackFrame.call(this)
@@ -86,10 +100,9 @@ export default function patchRuntime(vm: VM) {
                 }
               })
             }
-          }
-          if (p === 'goToNextBlock') {
+          } else if (p === 'goToNextBlock') {
             return () => {
-              throw new HyrenError()
+              throw new HyrenInterrupt()
             }
           }
           return Reflect.get(target, p, receiver)
@@ -104,14 +117,14 @@ export default function patchRuntime(vm: VM) {
             } else if (newValue !== (threadConstructor as any).STATUS_YIELD) {
               isPromiseWaitOrYieldTick = true
             }
-          }
+          } else if (p === 'blockGlowInFrame') return true // hyren: preventing set blockGlowInFrame (by stepThread())
           return Reflect.set(target, p, newValue, receiver)
         }
       })
       try {
         seq.stepThread(proxy)
       } catch (e) {
-        if (!(e instanceof HyrenError)) throw e
+        if (!(e instanceof HyrenInterrupt)) throw e
       } finally {
         if (seq.activeThread) seq.activeThread = thread
       }
@@ -153,14 +166,14 @@ export default function patchRuntime(vm: VM) {
     Object.prototype.hasOwnProperty = function () {
       // eslint-disable-next-line @typescript-eslint/no-this-alias
       defaultBlockPackages = this
-      throw new HyrenError()
+      throw new HyrenInterrupt()
     }
     try {
       _registerBlockPackages.call(this)
       Object.prototype.hasOwnProperty = _hasOwnProperty
     } catch (e) {
       Object.prototype.hasOwnProperty = _hasOwnProperty
-      if (!(e instanceof HyrenError)) throw e
+      if (!(e instanceof HyrenInterrupt)) throw e
       // Object.assign(defaultBlockPackages, twBlocks)
       for (const packageName in defaultBlockPackages) {
         if (
@@ -278,97 +291,6 @@ export default function patchRuntime(vm: VM) {
       }
     }
   }
-  // runtime.constructor.prototype.startHats = function (
-  //   requestedHatOpcode: string,
-  //   optMatchFields?: Record<string, string>,
-  //   optTarget?: VM.Target
-  // ) {
-  //   if (!Object.prototype.hasOwnProperty.call(this._hats, requestedHatOpcode)) {
-  //     // No known hat with this opcode.
-  //     return
-  //   }
-  //   const instance = this
-  //   const newThreads: VM.Thread[] = []
-  //   // Look up metadata for the relevant hat.
-  //   const hatMeta = instance._hats[requestedHatOpcode]
-
-  //   for (const opts in optMatchFields) {
-  //     if (!Object.prototype.hasOwnProperty.call(optMatchFields, opts)) continue
-  //     optMatchFields[opts] = optMatchFields[opts].toUpperCase()
-  //   }
-
-  //   // tw: By assuming that all new threads will not interfere with eachother, we can optimize the loops
-  //   // inside the allScriptsByOpcodeDo callback below.
-  //   const startingThreadListLength = this.threads.length
-
-  //   // Consider all scripts, looking for hats with opcode `requestedHatOpcode`.
-  //   this.allScriptsByOpcodeDo(
-  //     requestedHatOpcode,
-  //     (script: any, target: VM.Target) => {
-  //       const { blockId: topBlockId, fieldsOfInputs: hatFields } = script
-
-  //       // Match any requested fields.
-  //       // For example: ensures that broadcasts match.
-  //       // This needs to happen before the block is evaluated
-  //       // (i.e., before the predicate can be run) because "broadcast and wait"
-  //       // needs to have a precise collection of started threads.
-  //       for (const matchField in optMatchFields) {
-  //         if (hatFields[matchField].value !== optMatchFields[matchField]) {
-  //           // Field mismatch.
-  //           return
-  //         }
-  //       }
-
-  //       if (hatMeta.restartExistingThreads) {
-  //         // If `restartExistingThreads` is true, we should stop
-  //         // any existing threads starting with the top block.
-  //         // hyren: use `this.threads` instead of `this.threadMap` as non-Turbowarp Scratch does not have it.
-  //         const existingThread = this.threads.find(
-  //           (v: any) => v.target === target && v.topBlock === topBlockId
-  //         )
-  //         if (existingThread) {
-  //           newThreads.push(this._restartThread(existingThread))
-  //           return
-  //         }
-  //       } else {
-  //         // If `restartExistingThreads` is false, we should
-  //         // give up if any threads with the top block are running.
-  //         for (let j = 0; j < startingThreadListLength; j++) {
-  //           if (
-  //             this.threads[j].target === target &&
-  //             this.threads[j].topBlock === topBlockId &&
-  //             // stack click threads and hat threads can coexist
-  //             !this.threads[j].stackClick &&
-  //             this.threads[j].status !== (threadConstructor as any).STATUS_DONE
-  //           ) {
-  //             // Some thread is already running.
-  //             return
-  //           }
-  //         }
-  //       }
-  //       // Start the thread with this top block.
-  //       newThreads.push(this._pushThread(topBlockId, target))
-  //     },
-  //     optTarget
-  //   )
-  //   // For compatibility with Scratch 2, edge triggered hats need to be processed before
-  //   // threads are stepped. See ScratchRuntime.as for original implementation
-  //   newThreads.forEach((thread: any) => {
-  //     if (thread.isCompiled) {
-  //       if (thread.executableHat) {
-  //         // It is quite likely that we are currently executing a block, so make sure
-  //         // that we leave the compiler's state intact at the end.
-  //         compilerExecute.saveGlobalState()
-  //         compilerExecute(thread)
-  //         compilerExecute.restoreGlobalState()
-  //       }
-  //     } else {
-  //       execute(this.sequencer, thread)
-  //       thread.goToNextBlock()
-  //     }
-  //   })
-  //   return newThreads
-  // }
   const _resetCache = runtime.flyoutBlocks.constructor.prototype.resetCache
   runtime.flyoutBlocks.constructor.prototype.resetCache = function () {
     _resetCache.call(this)
@@ -400,35 +322,196 @@ export default function patchRuntime(vm: VM) {
   runtime.constructor.prototype.setCompilerOptions = function (
     compilerOptions: object
   ) {
-    if (
-      typeof runtime.compilerOptions === 'object' &&
-      runtime.compilerOptions !== null
+    this.compilerOptions = Object.assign(
+      {},
+      this.compilerOptions,
+      compilerOptions
     )
-      Object.assign(this.compilerOptions, compilerOptions)
-    else
-      this.compilerOptions = Object.assign(
-        {},
-        this.compilerOptions,
-        compilerOptions
-      )
     this.resetAllCaches()
     this.emit(
       (runtime as any).constructor.COMPILER_OPTIONS_CHANGED,
-      compilerOptions
+      this.compilerOptions
     )
   }
   ;(vm as any).setCompilerOptions = function (compilerOptions: object) {
     ;(this.runtime as any).setCompilerOptions(compilerOptions)
   }
+  ;(runtime as any).setCompilerOptions({
+    enabled: true,
+    warpTimer: !!(vm as any)._events.workspaceUpdate
+  })
+  if (!vm.runtime.constructor.prototype.parseProjectOptions) {
+    const COMMENT_CONFIG_MAGIC = ' // _twconfig_'
+    const _installTargets = vm.constructor.prototype.installTargets
+    vm.constructor.prototype.installTargets = function (
+      targets: object[],
+      extensions: object,
+      wholeProject: boolean
+    ) {
+      return _installTargets
+        .call(this, targets, extensions, wholeProject)
+        .then(() => {
+          if (wholeProject) {
+            this.runtime.parseProjectOptions()
+          }
+        })
+    }
+    vm.runtime.constructor.prototype.findProjectOptionsComment = function () {
+      const target = this.getTargetForStage()
+      const comments: any[] = target.comments
+      for (const comment of Object.values(comments)) {
+        if (comment.text.includes(COMMENT_CONFIG_MAGIC)) {
+          return comment
+        }
+      }
+      return null
+    }
+    vm.runtime.constructor.prototype.parseProjectOptions = function () {
+      const comment = this.findProjectOptionsComment()
+      if (!comment) return
+      const lineWithMagic = comment.text
+        .split('\n')
+        .find((i: string) => i.endsWith(COMMENT_CONFIG_MAGIC))
+      if (!lineWithMagic) {
+        VMLog.warn('Config comment does not contain valid line')
+        return
+      }
+
+      const jsonText = lineWithMagic.substr(
+        0,
+        lineWithMagic.length - COMMENT_CONFIG_MAGIC.length
+      )
+      let parsed: any
+      try {
+        parsed = ExtendedJSON.parse(jsonText)
+        if (!parsed || typeof parsed !== 'object') {
+          throw new Error('Invalid object')
+        }
+      } catch (e) {
+        VMLog.warn('Config comment has invalid JSON', e)
+        return
+      }
+
+      if (typeof parsed.framerate === 'number') {
+        if (parsed.framerate === 0) {
+          MainLog.log(formatMessage('hyren.fps.sync'))
+        } else {
+          MainLog.log(
+            formatMessage('hyren.fps').replace('%o', String(parsed.framerate))
+          )
+        }
+        this.setFramerate(parsed.framerate)
+      }
+      if (parsed.turbo) {
+        this.turboMode = true
+        this.emit((vm.runtime.constructor as any).TURBO_MODE_ON)
+      }
+      if (parsed.interpolation) {
+        this.setInterpolation(true)
+        MainLog.log(formatMessage('hyren.interpolation.enabled'))
+      }
+      if (parsed.runtimeOptions) {
+        if (parsed.runtimeOptions?.miscLimits === false)
+          MainLog.log(formatMessage('hyren.miscLimits.disabled'))
+        if (parsed.runtimeOptions?.fencing === false)
+          MainLog.log(formatMessage('hyren.fencing.disabled'))
+        if (typeof parsed.runtimeOptions?.maxClones !== 'undefined')
+          MainLog.log(
+            formatMessage('hyren.maxClones').replace(
+              '%o',
+              String(parsed.runtimeOptions.maxClones)
+            )
+          )
+        this.setRuntimeOptions(parsed.runtimeOptions)
+      }
+      if (parsed.hq && this.renderer) {
+        MainLog.log(formatMessage('hyren.hires.enabled'))
+        this.renderer.setUseHighQualityRender(true)
+      }
+      const storedWidth = +parsed.width || this.stageWidth
+      const storedHeight = +parsed.height || this.stageHeight
+      if (
+        storedWidth !== this.stageWidth ||
+        storedHeight !== this.stageHeight
+      ) {
+        MainLog.log(
+          formatMessage('hyren.size')
+            .replace('%o', String(storedWidth))
+            .replace('%2o', String(storedHeight))
+        )
+        this.setStageSize(storedWidth, storedHeight)
+      }
+    }
+    vm.runtime.constructor.prototype.storeProjectOptions = function () {
+      const options = this.generateDifferingProjectOptions()
+      // TODO: translate
+      const text = `Configuration for https://turbowarp.org/\nYou can move, resize, and minimize this comment, but don't edit it by hand. This comment can be deleted to remove the stored settings.\n${ExtendedJSON.stringify(options)}${COMMENT_CONFIG_MAGIC}`
+      const existingComment = this.findProjectOptionsComment()
+      if (existingComment) {
+        existingComment.text = text
+      } else {
+        const target = this.getTargetForStage()
+        // TODO: smarter position logic
+        target.createComment(uid(), null, text, 50, 50, 350, 170, false)
+      }
+      this.emitProjectChanged()
+    }
+    vm.runtime.constructor.prototype.generateDifferingProjectOptions =
+      function () {
+        const difference = (oldObject: any, newObject: any) => {
+          const result: any = {}
+          for (const key of Object.keys(newObject)) {
+            const newValue = newObject[key]
+            const oldValue = oldObject[key]
+            if (typeof newValue === 'object' && newValue) {
+              const valueDiffering = difference(oldValue, newValue)
+              if (Object.keys(valueDiffering).length > 0) {
+                result[key] = valueDiffering
+              }
+            } else if (newValue !== oldValue) {
+              result[key] = newValue
+            }
+          }
+          return result
+        }
+        return difference(
+          this._defaultStoredSettings,
+          this._generateAllProjectOptions()
+        )
+      }
+    vm.runtime.constructor.prototype._generateAllProjectOptions = function () {
+      return {
+        framerate: this.frameLoop?.framerate ?? 30,
+        runtimeOptions: this.runtimeOptions,
+        interpolation: this.interpolationEnabled ?? false,
+        turbo: this.turboMode,
+        hq: this.renderer ? this.renderer.useHighQualityRender ?? false : false,
+        width: this.stageWidth ?? (vm.runtime.constructor as any).STAGE_WIDTH,
+        height: this.stageHeight ?? (vm.runtime.constructor as any).STAGE_HEIGHT
+      }
+    }
+    vm.constructor.prototype.storeProjectOptions = function () {
+      this.runtime.storeProjectOptions()
+      if (this.editingTarget.isStage) {
+        this.emitWorkspaceUpdate()
+      }
+    }
+    ;(vm.runtime as any)._defaultStoredSettings = (
+      vm.runtime as any
+    )._generateAllProjectOptions()
+  }
   if (
-    typeof runtime.compilerOptions !== 'object' ||
-    runtime.compilerOptions === null ||
-    typeof runtime.compilerOptions.enabled !== 'boolean' ||
-    typeof runtime.compilerOptions.warpTimer !== 'boolean'
+    !(vm.runtime as any)._events[(vm.runtime.constructor as any).TURBO_MODE_ON]
   ) {
-    ;(runtime as any).setCompilerOptions({
-      enabled: true,
-      warpTimer: !!(vm as any)._events.workspaceUpdate
+    vm.runtime.on((vm.runtime.constructor as any).TURBO_MODE_ON, () => {
+      vm.emit((vm.runtime.constructor as any).TURBO_MODE_ON)
+    })
+  }
+  if (
+    !(vm.runtime as any)._events[(vm.runtime.constructor as any).TURBO_MODE_OFF]
+  ) {
+    vm.runtime.on((vm.runtime.constructor as any).TURBO_MODE_OFF, () => {
+      vm.emit((vm.runtime.constructor as any).TURBO_MODE_OFF)
     })
   }
 }

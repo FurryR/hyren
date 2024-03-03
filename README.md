@@ -2,17 +2,19 @@
 
 # 👾 Hyren
 
-> A tampermonkey script to use Turbowarp compiler anywhere.
+> A tampermonkey script to use Turbowarp features anywhere.
 
 [![Visitors](https://hits.dwyl.com/FurryR/hyren.svg?style=flat-square)](http://github.com/FurryR/hyren)
 [![🛠️ Build](https://github.com/FurryR/hyren/actions/workflows/ci.yaml/badge.svg)](https://github.com/FurryR/hyren/actions/workflows/ci.yaml)
+
+[🇺🇸](./README.md) | [🇨🇳](./README-zh_CN.md)
 
 </div align="center">
 
 ## 🐱 Features
 
-- ✅ Turbowarp compiler anywhere.
-- ⭐ Always keep updated with Turbowarp compiler.
+- ✅ Turbowarp features anywhere.
+- ⭐ Always keep updated with Turbowarp.
 - 🤖 Requires no extra configuration.
 - 🛠️ Perfect compatibility with [`Eureka`](https://github.com/EurekaScratch/eureka-loader).
 
@@ -58,7 +60,7 @@ Usually you can use hyren to boost most projects, but there are always some exce
 
 **⚠️ WARNING:** make sure you have read [**Compatibility**](#🛠️-compatibility) section before you installed.
 
-## 📄 Reference
+## 📄 Documentation
 
 - `Hyren.Compiler.set(flag?: boolean)`  
   Enable/Disable compiler. If flag is not specified, returns current status. Defaults to `true`.
@@ -71,11 +73,15 @@ Usually you can use hyren to boost most projects, but there are always some exce
 - `Hyren.Options.fps(num?: number)`  
   Set framerate to `num`. The allowed framerate range is `[0,250]`. `0` is a special value which means **"matching device screen refresh rate"**. If num is not specified, returns current specified framerate. Defaults to `30`.
 - `Hyren.Options.maxClones(num?: number)`  
-  Set max clone limit to `num`. If num is not specified, returns current specified counter. Defaults to `300`.
+  Set max clone limit to `num`. If num is not specified, returns current specified limit. Defaults to `300`.
 - `Hyren.Options.fencing(flag?: boolean)`  
-  Set whether to enable fencing check. If flag is not specified, returns current status. Defaults to `true`.
+  Enable/Disable fencing check. If flag is not specified, returns current status. Defaults to `true`.
 - `Hyren.Options.miscLimit(flag?: boolean)`  
-  Set whether to enable miscellaneous limits presented by original Scratch. If flag is not specified, returns current status. Defaults to `true`.
+  Enable/Disable miscellaneous limits presented by original Scratch. If flag is not specified, returns current status. Defaults to `true`.
+- `Hyren.Options.size(width?: number, height?: number)`
+  Set stage size. If both width and height are not specified, returns current status. Otherwise, set stage width/height while keeping the unspecified one.
+- `Hyren.save()`
+  Save settings to the project. Compatible with Turbowarp.
 
 ## ⚡ Performance
 
@@ -89,4 +95,6 @@ Testing on: 12th Gen Intel(R) Core(TM) i7-12700F + Nvidia RTX 4060 (32 GiB RAM, 
 | Scratch   | 28592       | 4054 | 411  | 3544    |
 | ClipCC    | 27929       | 4094 | 447  | 3640    |
 
-Tips: Hyren does not provide renderer optimizations.
+~~Tips: Hyren does not provide renderer optimizations.~~
+
+Note: This section is outdated. My graphics card is not working, someone plz help me test it

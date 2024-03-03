@@ -13,7 +13,6 @@
     "lint:type": "tsc --noEmit -p ./tsconfig.json",
     "fix": "eslint ./src --fix",
     "build": "cd scratch-render && npm run build && cd .. && tsup --minify",
-    "start": "cd scratch-render && npm run build && cd .. && tsup && http-server ./dist -p 8080 --cors",
     "dev": "cd scratch-render && npm run build && cd .. && tsup",
     "format": "prettier ./src *.md -c -w",
     "lint:format": "prettier ./src *.md -c"
@@ -31,16 +30,15 @@
   "homepage": "https://github.com/FurryR/lpp-scratch#readme",
   "devDependencies": {
     "@turbowarp/types": "^0.0.12",
-    "@types/node": "^20.11.20",
     "@typescript-eslint/eslint-plugin": "^6.18.1",
     "@typescript-eslint/parser": "^6.18.1",
-    "blockly": "^10.3.0",
     "eslint": "^8.56.0",
-    "format-message": "^6.2.4",
-    "http-server": "^14.1.1",
     "pre-commit": "^1.2.2",
     "prettier": "^3.2.1",
     "tsup": "^8.0.1",
     "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "@turbowarp/json": "^0.1.2"
   }
 }

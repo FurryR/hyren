@@ -1,4 +1,5 @@
 import { defineConfig } from 'tsup'
+import { version } from './package.json'
 
 export default defineConfig({
   name: 'hyren',
@@ -10,7 +11,7 @@ export default defineConfig({
     js: `// ==UserScript==
 // @name        Hyren
 // @description Run compiler anywhere.
-// @version     1
+// @version     ${version}
 // @author      FurryR
 // @match       https://scratch.mit.edu/projects/*
 // @match       https://aerfaying.com/Projects/*

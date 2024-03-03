@@ -24,11 +24,10 @@
     /* Module Resolution Options */
     "resolveJsonModule": true,
     "allowJs": true,
-    "checkJs": false,
     // "moduleResolution": "",
     // "esModuleInterop": true,
     // "allowSyntheticDefaultImports": true,
-    "types": ["node"],
+    "types": [],
     "baseUrl": ".",
     "paths": {
       // "~/*": [
@@ -40,13 +39,11 @@
     },
     "lib": ["ESNext", "DOM"],
     "target": "ESNext",
-    "moduleResolution": "Node",
     "outDir": "dist",
     "declaration": true
   },
   "include": [
     "src/**/*",
-    "scratch-vm/src/**/*",
     "tsup.config.ts",
     "package.json"
   ]

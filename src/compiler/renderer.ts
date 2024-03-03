@@ -29,6 +29,16 @@ export default function patchRenderer(vm: VM) {
         value: 'INTERPOLATION_CHANGED',
         writable: false
       })
+    if (!(vm.runtime.constructor as any).MONITORS_UPDATE)
+      Object.defineProperty(vm.runtime.constructor, 'MONITORS_UPDATE', {
+        value: 'MONITORS_UPDATE',
+        writable: false
+      })
+    if (!(vm.runtime.constructor as any).STAGE_SIZE_CHANGED)
+      Object.defineProperty(vm.runtime.constructor, 'STAGE_SIZE_CHANGED', {
+        value: 'STAGE_SIZE_CHANGED',
+        writable: false
+      })
     ;(vm.runtime as any).frameLoop = new FrameLoop(vm.runtime)
     ;(vm.runtime as any).interpolationEnabled = false
     const _attachRenderer = vm.runtime.constructor.prototype.attachRenderer
@@ -206,6 +216,48 @@ export default function patchRenderer(vm: VM) {
       this.frameLoop.start()
       this.emit((vm.runtime.constructor as any).RUNTIME_STARTED)
     }
+    vm.runtime.constructor.prototype.setStageSize = function (
+      width: number,
+      height: number
+    ) {
+      width = Math.round(Math.max(1, width))
+      height = Math.round(Math.max(1, height))
+      if (this.stageWidth !== width || this.stageHeight !== height) {
+        const deltaX = width - this.stageWidth
+        const deltaY = height - this.stageHeight
+        // Preserve monitor location relative to the center of the stage
+        if (this._monitorState.size > 0) {
+          const offsetX = deltaX / 2
+          const offsetY = deltaY / 2
+          for (const monitor of this._monitorState.valueSeq()) {
+            const newMonitor = monitor
+              .set('x', monitor.get('x') + offsetX)
+              .set('y', monitor.get('y') + offsetY)
+            this.requestUpdateMonitor(newMonitor)
+          }
+          this.emit(
+            (vm.runtime.constructor as any).MONITORS_UPDATE,
+            this._monitorState
+          )
+        }
+
+        this.stageWidth = width
+        this.stageHeight = height
+        if (this.renderer) {
+          this.renderer.setStageSize(
+            -width / 2,
+            width / 2,
+            -height / 2,
+            height / 2
+          )
+        }
+      }
+      this.emit(
+        (vm.runtime.constructor as any).STAGE_SIZE_CHANGED,
+        width,
+        height
+      )
+    }
     const renderer = vm.runtime.renderer
     if ((renderer as any)._gandiShaderManager) {
       // you won gandi, i will keep your shader manager.
@@ -217,6 +269,14 @@ export default function patchRenderer(vm: VM) {
       renderer._xRight,
       renderer._yBottom,
       renderer._yTop
+    )
+    const nativeSize = newRenderer.getNativeSize()
+    ;(vm.runtime as any).stageWidth = nativeSize[0]
+    ;(vm.runtime as any).stageHeight = nativeSize[1]
+    ;(newRenderer as any)._events = Object.assign(
+      {},
+      (renderer as any)._events,
+      (newRenderer as any)._events
     )
     renderer.resize = newRenderer.resize.bind(newRenderer)
     vm.runtime.attachRenderer(newRenderer)

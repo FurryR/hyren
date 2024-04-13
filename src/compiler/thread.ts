@@ -1,5 +1,5 @@
-import compilerExecute = require('../../scratch-vm/src/compiler/jsexecute')
-import Thread = require('../../scratch-vm/src/engine/thread')
+import compilerExecute = require('scratch-vm/src/compiler/jsexecute')
+import Thread = require('scratch-vm/src/engine/thread')
 import {
   ExtendedRuntime,
   ExtendedThread,

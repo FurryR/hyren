@@ -2,7 +2,7 @@ import { ExtendedRuntime, ExtendedThread } from '../typing'
 import * as ExtendedJSON from '@turbowarp/json'
 import { formatMessage } from 'src/l10n'
 import { MainLog, VMLog } from 'src/log'
-import compilerExecute = require('../../scratch-vm/src/compiler/jsexecute')
+import compilerExecute = require('scratch-vm/src/compiler/jsexecute')
 import patchThread from './thread'
 import patchRenderer from './renderer'
 import patchIO from './io'
@@ -10,7 +10,7 @@ import patchTarget from './target'
 import Compatibility from '../compatibility'
 import { IRGenerator, ScriptTreeGenerator } from 'scratch-vm/src/compiler/irgen'
 import JSGenerator = require('scratch-vm/src/compiler/jsgen')
-import uid = require('scratch-vm/src//util/uid')
+import uid = require('scratch-vm/src/util/uid')
 
 export default function patchRuntime(vm: VM) {
   class HyrenInterrupt extends Error {

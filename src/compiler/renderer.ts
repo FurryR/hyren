@@ -29,6 +29,11 @@ export default function patchRenderer(vm: VM) {
         value: 'INTERPOLATION_CHANGED',
         writable: false
       })
+    if (!(vm.runtime.constructor as any).RUNTIME_STOPPED)
+      Object.defineProperty(vm.runtime.constructor, 'RUNTIME_STOPPED', {
+        value: 'RUNTIME_STOPPED',
+        writable: false
+      })
     if (!(vm.runtime.constructor as any).MONITORS_UPDATE)
       Object.defineProperty(vm.runtime.constructor, 'MONITORS_UPDATE', {
         value: 'MONITORS_UPDATE',
@@ -64,6 +69,13 @@ export default function patchRenderer(vm: VM) {
           this.renderer.draw()
         }
       }
+    vm.runtime.constructor.prototype.quit = function () {
+      if (!this.frameLoop.running) {
+        return
+      }
+      this.frameLoop.stop()
+      this.emit((vm.runtime.constructor as any).RUNTIME_STOPPED)
+    }
     /**
      * Set whether we are in 30 TPS compatibility mode.
      * @param {boolean} compatibilityModeOn True iff in compatibility mode.
@@ -263,23 +275,40 @@ export default function patchRenderer(vm: VM) {
       // you won gandi, i will keep your shader manager.
       return
     }
-    const newRenderer: RenderWebGL = new (RenderWebGL as any)(
-      renderer.canvas,
-      renderer._xLeft,
-      renderer._xRight,
-      renderer._yBottom,
-      renderer._yTop
+    const { canvas, _xLeft, _xRight, _yBottom, _yTop, _events } =
+      renderer as any
+
+    Object.setPrototypeOf(renderer, null)
+    for (const key of Object.getOwnPropertyNames(renderer)) {
+      delete renderer[key as keyof RenderWebGL]
+    }
+    Object.setPrototypeOf(renderer, RenderWebGL.prototype)
+    ;(RenderWebGL as any).call(
+      renderer,
+      canvas,
+      _xLeft,
+      _xRight,
+      _yBottom,
+      _yTop
     )
-    const nativeSize = newRenderer.getNativeSize()
+
+    // const newRenderer: RenderWebGL = new (RenderWebGL as any)(
+    //   renderer.canvas,
+    //   renderer._xLeft,
+    //   renderer._xRight,
+    //   renderer._yBottom,
+    //   renderer._yTop
+    // )
+    const nativeSize = renderer.getNativeSize()
     ;(vm.runtime as any).stageWidth = nativeSize[0]
     ;(vm.runtime as any).stageHeight = nativeSize[1]
-    ;(newRenderer as any)._events = Object.assign(
+    ;(renderer as any)._events = Object.assign(
       {},
-      (renderer as any)._events,
-      (newRenderer as any)._events
+      _events,
+      (renderer as any)._events
     )
-    renderer.resize = newRenderer.resize.bind(newRenderer)
-    vm.runtime.attachRenderer(newRenderer)
+    // renderer.resize = newRenderer.resize.bind(newRenderer)
+    vm.runtime.attachRenderer(renderer)
   }
   if (vm.runtime.renderer) {
     onReady()

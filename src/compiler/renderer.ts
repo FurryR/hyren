@@ -313,13 +313,61 @@ export default function patchRenderer(vm: VM) {
   if (vm.runtime.renderer) {
     onReady()
   } else {
+    // Object.defineProperty(vm.runtime, 'renderer', {
+    //   get() {
+    //     return null
+    //   },
+    //   set(renderer: RenderWebGL) {
+    //     console.error('renderer set')
+    //     Object.defineProperty(vm.runtime, 'renderer', {
+    //       value: renderer,
+    //       writable: true,
+    //       configurable: true,
+    //       enumerable: true
+    //     })
+    //     onReady()
+    //   },
+    //   configurable: true,
+    //   enumerable: true
+    // })
     const _attachRenderer = vm.runtime.constructor.prototype.attachRenderer
     vm.runtime.constructor.prototype.attachRenderer = function (
       renderer: RenderWebGL
     ) {
-      vm.runtime.constructor.prototype.attachRenderer = _attachRenderer
+      const originalRenderer = this.renderer
+      // vm.runtime.constructor.prototype.attachRenderer = _attachRenderer
       _attachRenderer.call(this, renderer)
-      onReady()
+      // Xiaomawang attaches renderer twice.
+      if (originalRenderer !== renderer && !(renderer instanceof RenderWebGL)) {
+        const isXiaomawang = !!(renderer as any).clearAllSkins
+        if (isXiaomawang) {
+          const { clearAllSkins } = renderer as any
+          onReady()
+          renderer.constructor.prototype.clearAllSkins = clearAllSkins
+          renderer.constructor.prototype.extractDrawable = function () {
+            return {
+              data: '',
+              x: 0,
+              y: 0,
+              width: 0,
+              height: 0,
+              scratchOffset: [0, 0]
+            }
+          }
+          new ResizeObserver(() => {
+            renderer.resize(
+              renderer.canvas.clientWidth,
+              renderer.canvas.clientHeight
+            )
+            requestAnimationFrame(() => {
+              ;(renderer as any).dirty = true
+              renderer.draw()
+            })
+          }).observe(renderer.canvas)
+        } else {
+          onReady()
+        }
+      }
     }
   }
 }

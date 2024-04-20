@@ -62,23 +62,23 @@ Usually you can use hyren to boost most projects, but there are always some exce
 
 ## 📄 Documentation
 
-- `Hyren.Compiler.set(flag?: boolean)`  
+- `Hyren.compiler(flag?: boolean)`  
   Enable/Disable compiler. If flag is not specified, returns current status. Defaults to `true`.
-- `Hyren.Compiler.warp(flag?: boolean)`  
+- `Hyren.compiler.warp(flag?: boolean)`  
   Enable/Disable compiler warp timer. If flag is not specified, returns current status. If you are using editor, it is set to `true`, otherwise it is set to `false` at first.
-- `Hyren.Interpolation.set(flag?: boolean)`  
+- `Hyren.interpolation(flag?: boolean)`  
   Enable/Disable interpolation. If flag is not specified, returns current status. Defaults to `false`.
-- `Hyren.Options.hires(flag?: boolean)`  
+- `Hyren.hires(flag?: boolean)`  
   Enable/Disable high quality renderer (aka `HQPen` or `High quality pen`). If flag is not specified, returns current status. Defaults to `false`.
-- `Hyren.Options.fps(num?: number)`  
+- `Hyren.fps(num?: number)`  
   Set framerate to `num`. The allowed framerate range is `[0,250]`. `0` is a special value which means **"matching device screen refresh rate"**. If num is not specified, returns current specified framerate. Defaults to `30`.
-- `Hyren.Options.maxClones(num?: number)`  
+- `Hyren.maxClones(num?: number)`  
   Set max clone limit to `num`. If num is not specified, returns current specified limit. Defaults to `300`.
-- `Hyren.Options.fencing(flag?: boolean)`  
+- `Hyren.fencing(flag?: boolean)`  
   Enable/Disable fencing check. If flag is not specified, returns current status. Defaults to `true`.
-- `Hyren.Options.miscLimit(flag?: boolean)`  
+- `Hyren.miscLimit(flag?: boolean)`  
   Enable/Disable miscellaneous limits presented by original Scratch. If flag is not specified, returns current status. Defaults to `true`.
-- `Hyren.Options.size(width?: number, height?: number)`  
+- `Hyren.size(width?: number, height?: number)`  
   Set stage size. If both width and height are not specified, returns current status. Otherwise, set stage width/height while keeping the unspecified one.
 - `Hyren.save()`  
   Save settings to the project. Compatible with Turbowarp.

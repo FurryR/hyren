@@ -319,6 +319,14 @@ export default function patchRuntime(vm: VM) {
       }
     })
   }
+  runtime.constructor.prototype.enableDebug = function () {
+    this.resetAllCaches()
+    this.debug = true
+  }
+  vm.constructor.prototype.enableDebug = function () {
+    this.runtime.enableDebug()
+    return 'enabled debug mode'
+  }
   runtime.constructor.prototype.setCompilerOptions = function (
     compilerOptions: object
   ) {

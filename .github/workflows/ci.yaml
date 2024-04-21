@@ -16,7 +16,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [latest]
+        node-version: [20]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
@@ -34,14 +34,14 @@ jobs:
       - name: 🛠️ Build hyren (debug)
         run: npm run dev --if-present
       - name: ✅ Upload debug artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: hyren-debug
           path: dist/index.global.js
       - name: 🛠️ Build hyren (release)
         run: npm run build --if-present
       - name: ✅ Upload release artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: hyren-release
           path: dist/index.global.js

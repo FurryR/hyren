@@ -157,6 +157,31 @@ export default function patchRuntime(vm: VM) {
     name: string,
     extensionObject: object
   ) {
+    if (name === 'pen' && (extensionObject as any).print) {
+      // Aerfaying private APIs
+      const { _getPenLayerID } = extensionObject as any
+      extensionObject.constructor.prototype._getPenLayerID = function () {
+        if (this._penSkinId < 0) {
+          const id = _getPenLayerID.call(this)
+          if (runtime.renderer) {
+            ;(runtime.renderer as any)._penSkinId = id
+            ;(runtime.renderer as any)._watermarkSkinId = this._watermarkSkinId
+            const _updateRenderQuality =
+              runtime.renderer.constructor.prototype._updateRenderQuality
+            runtime.renderer.constructor.prototype._updateRenderQuality =
+              function () {
+                const penSkinId = this._penSkinId
+                const watermarkSkinId = this._watermarkSkinId
+                _updateRenderQuality.call(this)
+                this._penSkinId = watermarkSkinId
+                _updateRenderQuality.call(this)
+                this._penSkinId = penSkinId
+              }
+          }
+          return id
+        } else return _getPenLayerID.call(this)
+      }
+    }
     this[`ext_${name}`] = extensionObject
   }
   const _registerBlockPackages = runtime._registerBlockPackages

@@ -272,7 +272,7 @@ export default function patchRenderer(vm: VM) {
     }
     const renderer = vm.runtime.renderer
     if ((renderer as any)._gandiShaderManager) {
-      // you won gandi, i will keep your shader manager.
+      // Gandi modifies renderer (incompatible changes) for a lot -- because of Quake. As it reimplemented Turbowarp APIs, we just keep it.
       return
     }
     const { canvas, _xLeft, _xRight, _yBottom, _yTop, _events } =
@@ -291,14 +291,6 @@ export default function patchRenderer(vm: VM) {
       _yBottom,
       _yTop
     )
-
-    // const newRenderer: RenderWebGL = new (RenderWebGL as any)(
-    //   renderer.canvas,
-    //   renderer._xLeft,
-    //   renderer._xRight,
-    //   renderer._yBottom,
-    //   renderer._yTop
-    // )
     const nativeSize = renderer.getNativeSize()
     ;(vm.runtime as any).stageWidth = nativeSize[0]
     ;(vm.runtime as any).stageHeight = nativeSize[1]
@@ -313,23 +305,6 @@ export default function patchRenderer(vm: VM) {
   if (vm.runtime.renderer) {
     onReady()
   } else {
-    // Object.defineProperty(vm.runtime, 'renderer', {
-    //   get() {
-    //     return null
-    //   },
-    //   set(renderer: RenderWebGL) {
-    //     console.error('renderer set')
-    //     Object.defineProperty(vm.runtime, 'renderer', {
-    //       value: renderer,
-    //       writable: true,
-    //       configurable: true,
-    //       enumerable: true
-    //     })
-    //     onReady()
-    //   },
-    //   configurable: true,
-    //   enumerable: true
-    // })
     const _attachRenderer = vm.runtime.constructor.prototype.attachRenderer
     vm.runtime.constructor.prototype.attachRenderer = function (
       renderer: RenderWebGL
@@ -339,11 +314,13 @@ export default function patchRenderer(vm: VM) {
       _attachRenderer.call(this, renderer)
       // Xiaomawang attaches renderer twice.
       if (originalRenderer !== renderer && !(renderer instanceof RenderWebGL)) {
-        const isXiaomawang = !!(renderer as any).clearAllSkins
-        if (isXiaomawang) {
+        if (!!(renderer as any).clearAllSkins) {
+          // Patch Xiaomawang private APIs
           const { clearAllSkins } = renderer as any
           onReady()
+          // clearAllSkins() is used to dispose all skins. This API exists because Xiaomawang's developers have skill issue.
           renderer.constructor.prototype.clearAllSkins = clearAllSkins
+          // extractDrawable() is used to extract the drawable (for dragging or something else). It slows down the renderer for a lot, so replace it with a no-op function would be fine.
           renderer.constructor.prototype.extractDrawable = function () {
             return {
               data: '',

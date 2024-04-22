@@ -70,9 +70,6 @@ export default function patchRuntime(vm: VM) {
     }
   })
   const threadConstructor = patchThread(vm)
-  patchRenderer(vm)
-  patchTarget(vm)
-  patchIO(vm)
   let hyrenExports = Object.assign({}, (vm as any).exports, {
     IRGenerator,
     ScriptTreeGenerator,
@@ -134,6 +131,9 @@ export default function patchRuntime(vm: VM) {
       // Compatibility with Turbowarp
       (vm as any).exports
   })
+  patchTarget(vm)
+  patchRenderer(vm)
+  patchIO(vm)
   Object.defineProperty(vm as any, 'exports', {
     get() {
       return hyrenExports

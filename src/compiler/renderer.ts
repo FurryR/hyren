@@ -314,7 +314,7 @@ export default function patchRenderer(vm: VM) {
       _attachRenderer.call(this, renderer)
       // Xiaomawang attaches renderer twice.
       if (originalRenderer !== renderer && !(renderer instanceof RenderWebGL)) {
-        if (!!(renderer as any).clearAllSkins) {
+        if ((renderer as any).clearAllSkins) {
           // Patch Xiaomawang private APIs
           const { clearAllSkins } = renderer as any
           onReady()

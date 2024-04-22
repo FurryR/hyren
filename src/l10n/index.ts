@@ -36,7 +36,7 @@ const l10n: Record<string, Record<string, string>> = {
     'hyren.abouttw':
       'Hyren は Turbowarp をもとにして作られたのです。詳しくは https://turbowarp.org/editor をご覧ください。',
     'hyren.ghrepo':
-      'GitHub レポジトリー: https://github.com/FurryR/hyren。Hyren は AGPL-3.0 でライセンスされています。',
+      'GitHub レポジトリー: https://github.com/FurryR/hyren 。Hyren は AGPL-3.0 でライセンスされています。',
     'hyren.help':
       'グローバルオブジェクト `Hyren` で Hyren の色々な設定を調整できます。詳しくは https://github.com/FurryR/hyren/blob/main/README.md#-documentation をご覧ください。',
     'hyren.compiler.enabled': 'コンパイラーが有効になりました。',
@@ -69,7 +69,7 @@ const l10n: Record<string, Record<string, string>> = {
     'hyren.abouttw':
       'Hyren 基于 Turbowarp。请访问 https://turbowarp.org/editor 以获得更多信息。',
     'hyren.ghrepo':
-      'GitHub 仓库: https://github.com/FurryR/hyren。Hyren 以 AGPL-3.0 开源协议授权。',
+      'GitHub 仓库: https://github.com/FurryR/hyren 。Hyren 以 AGPL-3.0 开源协议授权。',
     'hyren.help':
       '您可以使用全局对象 `Hyren` 来调整 Hyren 的各种设定。欲知更多，请访问 https://github.com/FurryR/hyren/blob/main/README-zh_CN.md#-文档 。',
     'hyren.compiler.enabled': '已启用编译器。',
@@ -93,7 +93,7 @@ const l10n: Record<string, Record<string, string>> = {
     'hyren.save': '已在作品中保存设置。'
   }
 }
-export let locale = {
+export const locale = {
   value: 'en'
 }
 export const formatMessage = (id: string) => {

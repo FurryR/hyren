@@ -79,9 +79,9 @@ export default function patchTarget(vm: VM) {
       this.runtime.requestTargetsUpdate(this)
     }
   }
-  let t = vm.runtime.getTargetForStage()
-  if (t) {
-    onReady(t)
+  const stage = vm.runtime.getTargetForStage()
+  if (stage) {
+    onReady(stage)
   } else {
     const _addTarget = vm.runtime.constructor.prototype.addTarget
     vm.runtime.constructor.prototype.addTarget = function (

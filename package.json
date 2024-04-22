@@ -12,8 +12,10 @@
     "lint": "eslint ./src",
     "lint:type": "tsc --noEmit -p ./tsconfig.json",
     "fix": "eslint ./src --fix",
-    "build": "cd scratch-render && npm run build && cd .. && tsup --minify",
-    "dev": "cd scratch-render && npm run build && cd .. && tsup",
+    "build": "cd scratch-render && npm run build && cd .. && tsup src/index.ts --format iife --minify",
+    "dev": "cd scratch-render && npm run build && cd .. && tsup src/index.ts --format iife",
+    "build:injector": "cd scratch-render && npm run build && cd .. && tsup src/injector.ts --format esm --minify",
+    "dev:injector": "cd scratch-render && npm run build && cd .. && tsup src/injector.ts --format esm",
     "format": "prettier ./src *.md -c -w",
     "lint:format": "prettier ./src *.md -c"
   },

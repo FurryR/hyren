@@ -3,9 +3,7 @@ import { version } from './package.json'
 
 export default defineConfig({
   name: 'hyren',
-  entry: ['src/index.ts'],
   target: ['esnext'],
-  format: ['iife'],
   outDir: 'dist',
   banner: {
     js: `// ==UserScript==

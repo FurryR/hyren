@@ -131,9 +131,6 @@ export default function patchRuntime(vm: VM) {
       // Compatibility with Turbowarp
       (vm as any).exports
   })
-  patchTarget(vm)
-  patchRenderer(vm)
-  patchIO(vm)
   Object.defineProperty(vm as any, 'exports', {
     get() {
       return hyrenExports
@@ -143,6 +140,9 @@ export default function patchRuntime(vm: VM) {
     },
     configurable: true
   })
+  patchTarget(vm)
+  patchRenderer(vm)
+  patchIO(vm)
 
   runtime.constructor.prototype.emitCompileError = function (
     target: VM.RenderedTarget,

@@ -275,8 +275,15 @@ export default function patchRenderer(vm: VM) {
       // Gandi modifies renderer (incompatible changes) for a lot -- because of Quake. As it reimplemented Turbowarp APIs, we just keep it.
       return
     }
-    const { canvas, _xLeft, _xRight, _yBottom, _yTop, _events } =
-      renderer as any
+    const {
+      canvas,
+      _xLeft,
+      _xRight,
+      _yBottom,
+      _yTop,
+      _events,
+      _shaderManager
+    } = renderer as any
 
     Object.setPrototypeOf(renderer, null)
     for (const key of Object.getOwnPropertyNames(renderer)) {
@@ -291,6 +298,23 @@ export default function patchRenderer(vm: VM) {
       _yBottom,
       _yTop
     )
+    // Compatible with PenguinMod -- custom effects
+    ;(renderer._shaderManager.constructor as any).EFFECT_INFO = Object.assign(
+      {},
+      _shaderManager.constructor.EFFECT_INFO,
+      (renderer._shaderManager.constructor as any).EFFECT_INFO
+    )
+    ;(renderer._shaderManager.constructor as any).DRAW_MODE = Object.assign(
+      {},
+      _shaderManager.constructor.DRAW_MODE,
+      (renderer._shaderManager.constructor as any).DRAW_MODE
+    )
+    ;(renderer._shaderManager.constructor as any).EFFECTS = [
+      ...new Set([
+        ...(renderer._shaderManager.constructor as any).EFFECTS,
+        ..._shaderManager.constructor.EFFECTS
+      ]).values()
+    ]
     const nativeSize = renderer.getNativeSize()
     ;(vm.runtime as any).stageWidth = nativeSize[0]
     ;(vm.runtime as any).stageHeight = nativeSize[1]

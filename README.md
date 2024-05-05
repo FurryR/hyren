@@ -1,8 +1,10 @@
 <div align="center">
 
-# 👾 Hyren
+# [👾 Hyren](https://furryr.github.io/hyren/hyren.release.user.js)
 
 > A tampermonkey script to use Turbowarp features anywhere.
+> 
+> (Hint) Click title to install!
 
 [![Visitors](https://hits.dwyl.com/FurryR/hyren.svg?style=flat-square)](http://github.com/FurryR/hyren)
 [![🛠️ Build](https://github.com/FurryR/hyren/actions/workflows/ci.yaml/badge.svg)](https://github.com/FurryR/hyren/actions/workflows/ci.yaml)
@@ -52,11 +54,9 @@ Usually you can use hyren to boost most projects, but there are always some exce
 
 ## 🤔 How to use
 
-1. 🔽 Download hyren daily build from [`Github Actions`](https://github.com/FurryR/hyren/actions/workflows/ci.yaml) (**requires login**). Please always download latest commit. You can download either `hyren-debug` or `hyren-release`. Decompress the artifact into a folder.
+1. 🔽 Click hyren title or [here](https://furryr.github.io/hyren/hyren.release.user.js) to install the extension. You must have `Tampermonkey` / `ViolentMonkey` installed in your browser.
 
-2. 🐺 Open the artifact in browser and your `Tampermonkey` / `ViolentMonkey` will automatically detect it as an userscript. Click `Install`.
-
-3. 🎉 Done!
+2. 🎉 Done!
 
 **⚠️ WARNING:** make sure you have read [**Compatibility**](#🛠️-compatibility) section before you installed.
 

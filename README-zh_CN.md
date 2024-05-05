@@ -1,8 +1,10 @@
 <div align="center">
 
-# 👾 Hyren
+# [👾 Hyren](https://furryr.github.io/hyren/hyren.release.user.js)
 
 > 在任何地方使用 Turbowarp 特性。
+> 
+> (温馨提示) 点击标题即可安装!
 
 [![Visitors](https://hits.dwyl.com/FurryR/hyren.svg?style=flat-square)](http://github.com/FurryR/hyren)
 [![🛠️ Build](https://github.com/FurryR/hyren/actions/workflows/ci.yaml/badge.svg)](https://github.com/FurryR/hyren/actions/workflows/ci.yaml)
@@ -52,11 +54,9 @@
 
 ## 🤔 如何使用
 
-1. 🔽 从 [`Github Actions`](https://github.com/FurryR/hyren/actions/workflows/ci.yaml) 下载 Hyren 的每日构建 (**需要登录**)。请永远下载最后一个提交的构建。你可以下载 `hyren-debug` 或者 `hyren-release` 二者之一。解压构建产物（就是刚刚下载的）到一个文件夹里。
+1. 🔽 无论是点击 Hyren 标题还是 [这里](https://furryr.github.io/hyren/hyren.release.user.js) 都可以安装 Hyren。你必须先于你的浏览器安装 `Tampermonkey` / `ViolentMonkey`。
 
-2. 🐺 在浏览器中打开构建产物（就是压缩包里面的内容），你的 `Tampermonkey` / `ViolentMonkey` 将会自动检测它为一个用户脚本。点击 `安装`。
-
-3. 🎉 完成！
+2. 🎉 完成！
 
 **⚠️ 警告：** 在安装前请确保你已经读了 [**兼容性**](#🛠️-兼容性) 这一段。
 

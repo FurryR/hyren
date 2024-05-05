@@ -34,9 +34,11 @@ export default defineConfig({
 // @match             https://studio.penguinmod.com/*
 // @match             https://code.xueersi.com/*
 // @grant             none
-// @namespace         hyren
+// @namespace         Hyren
 // @run-at            document-start
 // @source            https://github.com/FurryR/hyren
+// @downloadURL       https://furryr.github.io/hyren/hyren.release.user.js
+// @updateURL         https://furryr.github.io/hyren/hyren.release.user.js
 // ==/UserScript==
 `
   },

@@ -27,21 +27,19 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
-      - name: 👾 Fetching Turbowarp
+      - name: 👾 Fetch Turbowarp
         run: git submodule update --init
       - name: 🔽 Install & Build dependencies
         run: cd scratch-render && npm ci && npm run build && cd .. && npm ci
-      - name: 🛠️ Build hyren (debug)
-        run: npm run dev --if-present
-      - name: ✅ Upload debug artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: hyren-debug
-          path: dist/index.global.js
-      - name: 🛠️ Build hyren (release)
+      - name: 🛠️ Build hyren
         run: npm run build --if-present
+      - name: 💀 Prepare GitHub Pages
+        run: |
+          git checkout build
+          cp ./dist/index.global.js ./hyren.release.user.js
       - name: ✅ Upload release artifacts
-        uses: actions/upload-artifact@v4
+        uses: EndBug/add-and-commit@v9
         with:
-          name: hyren-release
-          path: dist/index.global.js
+          add: hyren.release.user.js
+          message: ':package: chore(build): build hyren'
+          default_author: github_actions

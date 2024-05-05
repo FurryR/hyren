@@ -30,7 +30,7 @@ jobs:
       - name: 👾 Fetch Turbowarp
         run: git submodule update --init
       - name: 🔽 Install & Build dependencies
-        run: cd scratch-render && npm ci && npm run build && cd .. && npm ci
+        run: cd scratch-render && npm ci && cd .. && npm ci
       - name: 🛠️ Build hyren
         run: npm run build --if-present
       - name: 💀 Prepare GitHub Pages

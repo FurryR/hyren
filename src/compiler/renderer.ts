@@ -328,46 +328,45 @@ export default function patchRenderer(vm: VM) {
   }
   if (vm.runtime.renderer) {
     onReady()
-  } else {
-    const _attachRenderer = vm.runtime.constructor.prototype.attachRenderer
-    vm.runtime.constructor.prototype.attachRenderer = function (
-      renderer: RenderWebGL
-    ) {
-      const originalRenderer = this.renderer
-      // vm.runtime.constructor.prototype.attachRenderer = _attachRenderer
-      _attachRenderer.call(this, renderer)
-      // Xiaomawang attaches renderer twice.
-      if (originalRenderer !== renderer && !(renderer instanceof RenderWebGL)) {
-        if ((renderer as any).clearAllSkins) {
-          // Patch Xiaomawang private APIs
-          const { clearAllSkins } = renderer as any
-          onReady()
-          // clearAllSkins() is used to dispose all skins. This API exists because Xiaomawang's developers have skill issue.
-          renderer.constructor.prototype.clearAllSkins = clearAllSkins
-          // extractDrawable() is used to extract the drawable (for dragging or something else). It slows down the renderer for a lot, so replace it with a no-op function would be fine.
-          renderer.constructor.prototype.extractDrawable = function () {
-            return {
-              data: '',
-              x: 0,
-              y: 0,
-              width: 0,
-              height: 0,
-              scratchOffset: [0, 0]
-            }
+  }
+  const _attachRenderer = vm.runtime.constructor.prototype.attachRenderer
+  vm.runtime.constructor.prototype.attachRenderer = function (
+    renderer: RenderWebGL
+  ) {
+    const originalRenderer = this.renderer
+    // vm.runtime.constructor.prototype.attachRenderer = _attachRenderer
+    _attachRenderer.call(this, renderer)
+    // Xiaomawang attaches renderer twice.
+    if (originalRenderer !== renderer && !(renderer instanceof RenderWebGL)) {
+      if ((renderer as any).clearAllSkins) {
+        // Patch Xiaomawang private APIs
+        const { clearAllSkins } = renderer as any
+        onReady()
+        // clearAllSkins() is used to dispose all skins. This API exists because Xiaomawang's developers have skill issue.
+        renderer.constructor.prototype.clearAllSkins = clearAllSkins
+        // extractDrawable() is used to extract the drawable (for dragging or something else). It slows down the renderer for a lot, so replace it with a no-op function would be fine.
+        renderer.constructor.prototype.extractDrawable = function () {
+          return {
+            data: '',
+            x: 0,
+            y: 0,
+            width: 0,
+            height: 0,
+            scratchOffset: [0, 0]
           }
-          new ResizeObserver(() => {
-            renderer.resize(
-              renderer.canvas.clientWidth,
-              renderer.canvas.clientHeight
-            )
-            requestAnimationFrame(() => {
-              ;(renderer as any).dirty = true
-              renderer.draw()
-            })
-          }).observe(renderer.canvas)
-        } else {
-          onReady()
         }
+        new ResizeObserver(() => {
+          renderer.resize(
+            renderer.canvas.clientWidth,
+            renderer.canvas.clientHeight
+          )
+          requestAnimationFrame(() => {
+            ;(renderer as any).dirty = true
+            renderer.draw()
+          })
+        }).observe(renderer.canvas)
+      } else {
+        onReady()
       }
     }
   }

@@ -383,13 +383,13 @@ export default function patchRuntime(vm: VM) {
     ) {
       // ClipCC has a bug about vm.installTargets -- it didn't return a Promise.
       // TODO: remove this when clipcc new version is released.
-      return Promise.resolve(_installTargets
-        .call(this, targets, extensions, wholeProject))
-        .then(() => {
-          if (wholeProject) {
-            this.runtime.parseProjectOptions()
-          }
-        })
+      return Promise.resolve(
+        _installTargets.call(this, targets, extensions, wholeProject)
+      ).then(() => {
+        if (wholeProject) {
+          this.runtime.parseProjectOptions()
+        }
+      })
     }
     vm.runtime.constructor.prototype.findProjectOptionsComment = function () {
       const target = this.getTargetForStage()

@@ -3,7 +3,7 @@
 # [👾 Hyren](https://furryr.github.io/hyren/hyren.release.user.js)
 
 > 在任何地方使用 Turbowarp 特性。
-> 
+>
 > (温馨提示) 点击标题即可安装!
 
 [![Visitors](https://hits.dwyl.com/FurryR/hyren.svg?style=flat-square)](http://github.com/FurryR/hyren)

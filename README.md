@@ -3,7 +3,7 @@
 # [👾 Hyren](https://furryr.github.io/hyren/hyren.release.user.js)
 
 > A tampermonkey script to use Turbowarp features anywhere.
-> 
+>
 > (Hint) Click title to install!
 
 [![Visitors](https://hits.dwyl.com/FurryR/hyren.svg?style=flat-square)](http://github.com/FurryR/hyren)

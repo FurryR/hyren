@@ -6,6 +6,9 @@ import { MainLog } from './log'
 import patchRuntime from './compiler/runtime'
 
 export function loadHyren(vm: VM) {
+  if (Reflect.has(window, 'Hyren')) {
+    return
+  }
   vm.on('LOCALE_CHANGED' as any, () => {
     locale.value = (vm as any).getLocale()
   })

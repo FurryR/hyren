@@ -3,6 +3,18 @@ import Cast = require('scratch-vm/src/util/cast')
 
 export default function scratch3Sound(packageObject: any) {
   const Scratch3SoundBlocks = packageObject.constructor
+  if (!Scratch3SoundBlocks.LARGER_EFFECT_RANGE) {
+    Object.defineProperty(Scratch3SoundBlocks, 'LARGER_EFFECT_RANGE', {
+      value: {
+        // scratch-audio throws if pitch is too big because some math results in Infinity
+        pitch: { min: -1000, max: 1000 },
+
+        // No reason for these to go beyond 100
+        pan: { min: -100, max: 100 }
+      },
+      writable: false
+    })
+  }
   Scratch3SoundBlocks.prototype._updateEffect = function (
     args: any,
     util: any,

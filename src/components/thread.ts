@@ -197,39 +197,5 @@ export default function patchThread(vm: VM): ExtendedThreadConstructor {
       return
     } else return _stepThread.call(this, thread)
   }
-  // note: legacy Scratch does not step immediately after new threads being created, so there is no need to patch.
-  // if (runtime.constructor.prototype.allScriptsByOpcodeDo) {
-  //   const _startHats = runtime.constructor.prototype.startHats
-  //   runtime.constructor.prototype.startHats = function (
-  //     this: any,
-  //     requestedHatOpcode: string,
-  //     optMatchFields?: Record<string, unknown>,
-  //     optTarget?: VM.Target
-  //   ): VM.Thread[] | undefined {
-  //     const _forEach = Array.prototype.forEach
-  //     Array.prototype.forEach = function patchedForeach(predict) {
-  //       Array.prototype.forEach = _forEach
-  //       for (const [index, value] of this.entries()) {
-  //         if (value?.isCompiled) {
-  //           // It is quite likely that we are currently executing a block, so make sure
-  //           // that we leave the compiler's state intact at the end.
-  //           compilerExecute.saveGlobalState()
-  //           compilerExecute(value)
-  //           compilerExecute.restoreGlobalState()
-  //         } else predict(value, index, this)
-  //       }
-  //     }
-  //     try {
-  //       return _startHats.call(
-  //         this,
-  //         requestedHatOpcode,
-  //         optMatchFields,
-  //         optTarget
-  //       )
-  //     } finally {
-  //       Array.prototype.forEach = _forEach
-  //     }
-  //   }
-  // }
   return thread.constructor as ExtendedThreadConstructor
 }

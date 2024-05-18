@@ -3,7 +3,7 @@ import { locale, formatMessage } from './l10n'
 import { version } from 'package.json'
 import { MainLog } from './log'
 
-import patchRuntime from './compiler/runtime'
+import patchRuntime from './components/runtime'
 
 export function loadHyren(vm: VM) {
   if (Reflect.has(window, 'Hyren')) {

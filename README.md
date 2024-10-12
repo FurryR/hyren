@@ -30,7 +30,7 @@
 - [x] Xueersi (学而思)
 - [x] Creaticode
 
-❓ Although these platforms do have native compiler, we still support them but it may lead to some problems.
+❓ These platforms do have native compiler, so we are not willing to support them.
 
 - [x] Cocrea
 - [x] Co-Create World (共创世界)

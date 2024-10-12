@@ -28,7 +28,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
       - name: 👾 Fetch Turbowarp
-        run: git submodule update --init
+        run: git submodule update --init --depth 1
       - name: 🔽 Install & Build dependencies
         run: cd scratch-render && npm ci && cd .. && npm ci
       - name: 🛠️ Build hyren

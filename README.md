@@ -87,14 +87,12 @@ Usually you can use hyren to boost most projects, but there are always some exce
 
 ⚡ Benchmark using: https://scratch.mit.edu/projects/441947766/
 
-Testing on: 12th Gen Intel(R) Core(TM) i7-12700F + Nvidia RTX 4060 (32 GiB RAM, 8 GiB VRAM)
+Testing on: 12th Gen Intel(R) Core(TM) i7-12700F + Nvidia RTX 4060 (32 GiB RAM, 8 GiB VRAM), Edge 129.0.2792.89
 
 | Platform  | Computation | Data | Pen  | Overall |
 | --------- | ----------- | ---- | ---- | ------- |
-| Turbowarp | 27929       | 4120 | 1711 | 6234    |
-| Scratch   | 28592       | 4054 | 411  | 3544    |
-| ClipCC    | 27929       | 4094 | 447  | 3640    |
+| Turbowarp | 28087       | 4369 | 2229 | 7026    |
+| Scratch   | 27091       | 4255 | 446  | 3621    |
+| ClipCC    | 27690       | 4323 | 448  | 3668    |
 
-~~Tips: Hyren does not provide renderer optimizations.~~
-
-Note: This section is outdated. My graphics card is not working, someone plz help me test it
+Note: The injected renderer is very slow due to some issues.

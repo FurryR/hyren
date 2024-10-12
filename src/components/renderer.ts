@@ -46,30 +46,27 @@ export default function patchRenderer(vm: VM) {
       })
     ;(vm.runtime as any).frameLoop = new FrameLoop(vm.runtime)
     ;(vm.runtime as any).interpolationEnabled = false
-    const _attachRenderer = vm.runtime.constructor.prototype.attachRenderer
-    vm.runtime.constructor.prototype.attachRenderer = function (
-      renderer: RenderWebGL
-    ) {
+    const _attachRenderer = vm.runtime.attachRenderer
+    ;(vm.runtime as any).attachRenderer = function (renderer: RenderWebGL) {
       _attachRenderer.call(this, renderer)
       this.renderer.offscreenTouching = !this.runtimeOptions.fencing
     }
-    vm.runtime.constructor.prototype._renderInterpolatedPositions =
-      function () {
-        const frameStarted = this._lastStepTime
-        const now = Date.now()
-        const timeSinceStart = now - frameStarted
-        const progressInFrame = Math.min(
-          1,
-          Math.max(0, timeSinceStart / this.currentStepTime)
-        )
+    ;(vm.runtime as any)._renderInterpolatedPositions = function () {
+      const frameStarted = this._lastStepTime
+      const now = Date.now()
+      const timeSinceStart = now - frameStarted
+      const progressInFrame = Math.min(
+        1,
+        Math.max(0, timeSinceStart / this.currentStepTime)
+      )
 
-        interpolate.interpolate(this, progressInFrame)
+      interpolate.interpolate(this, progressInFrame)
 
-        if (this.renderer) {
-          this.renderer.draw()
-        }
+      if (this.renderer) {
+        this.renderer.draw()
       }
-    vm.runtime.constructor.prototype.quit = function () {
+    }
+    ;(vm.runtime as any).quit = function () {
       if (!this.frameLoop.running) {
         return
       }
@@ -80,7 +77,7 @@ export default function patchRenderer(vm: VM) {
      * Set whether we are in 30 TPS compatibility mode.
      * @param {boolean} compatibilityModeOn True iff in compatibility mode.
      */
-    vm.runtime.constructor.prototype.setCompatibilityMode = function (
+    ;(vm.runtime as any).setCompatibilityMode = function (
       compatibilityModeOn: boolean
     ) {
       // tw: "compatibility mode" is replaced with a generic framerate setter,
@@ -96,9 +93,7 @@ export default function patchRenderer(vm: VM) {
      * tw: Change runtime target frames per second
      * @param {number} framerate Target frames per second
      */
-    vm.runtime.constructor.prototype.setFramerate = function (
-      framerate: number
-    ) {
+    ;(vm.runtime as any).setFramerate = function (framerate: number) {
       // Setting framerate to anything greater than this is unnecessary and can break the sequencer
       // Additionally, the JS spec says intervals can't run more than once every 4ms (250/s) anyways
       if (framerate > 250) framerate = 250
@@ -113,7 +108,7 @@ export default function patchRenderer(vm: VM) {
      * tw: Enable or disable interpolation.
      * @param {boolean} interpolationEnabled True if interpolation should be enabled.
      */
-    vm.runtime.constructor.prototype.setInterpolation = function (
+    ;(vm.runtime as any).setInterpolation = function (
       interpolationEnabled: boolean
     ) {
       this.interpolationEnabled = interpolationEnabled
@@ -123,7 +118,7 @@ export default function patchRenderer(vm: VM) {
         interpolationEnabled
       )
     }
-    vm.runtime.constructor.prototype._step = function (this: any) {
+    ;(vm.runtime as any)._step = function (this: any) {
       if (this.interpolationEnabled) {
         interpolate.setupInitialState(this)
       }
@@ -222,13 +217,13 @@ export default function patchRenderer(vm: VM) {
         this._lastStepTime = Date.now()
       }
     }
-    vm.runtime.constructor.prototype.start = function () {
+    ;(vm.runtime as any).start = function () {
       // Do not start if we are already running
       if (this.frameLoop.running) return
       this.frameLoop.start()
       this.emit((vm.runtime.constructor as any).RUNTIME_STARTED)
     }
-    vm.runtime.constructor.prototype.setStageSize = function (
+    ;(vm.runtime as any).setStageSize = function (
       width: number,
       height: number
     ) {
@@ -276,6 +271,7 @@ export default function patchRenderer(vm: VM) {
       return
     }
     const {
+      _gl,
       canvas,
       _xLeft,
       _xRight,
@@ -290,6 +286,11 @@ export default function patchRenderer(vm: VM) {
       delete renderer[key as keyof RenderWebGL]
     }
     Object.setPrototypeOf(renderer, RenderWebGL.prototype)
+    const _getContext = (RenderWebGL as any)._getContext
+    // Avoid creating new context.
+    ;(RenderWebGL as any)._getContext = function () {
+      return _gl
+    }
     ;(RenderWebGL as any).call(
       renderer,
       canvas,
@@ -298,6 +299,7 @@ export default function patchRenderer(vm: VM) {
       _yBottom,
       _yTop
     )
+    ;(RenderWebGL as any)._getContext = _getContext
     // Compatible with PenguinMod -- custom effects
     ;(renderer._shaderManager.constructor as any).EFFECT_INFO = Object.assign(
       {},
@@ -326,13 +328,31 @@ export default function patchRenderer(vm: VM) {
     // renderer.resize = newRenderer.resize.bind(newRenderer)
     vm.runtime.attachRenderer(renderer)
   }
+  // Force old renderer to use WebGL2.
+  const _getContext = HTMLCanvasElement.prototype.getContext
+  HTMLCanvasElement.prototype.getContext = function (
+    this: HTMLCanvasElement,
+    contextId: string,
+    options?: any
+  ) {
+    if (contextId === 'webgl' || contextId === 'experimental-webgl') {
+      return (
+        _getContext.call(this, 'webgl2', {
+          alpha: false,
+          stencil: true,
+          antialias: false,
+          powerPreference: (RenderWebGL as any).powerPreference
+        }) ?? _getContext.call(this, contextId, options)
+      )
+    }
+    return _getContext.call(this, contextId, options)
+  } as any
   if (vm.runtime.renderer) {
+    HTMLCanvasElement.prototype.getContext = _getContext
     onReady()
   }
-  const _attachRenderer = vm.runtime.constructor.prototype.attachRenderer
-  vm.runtime.constructor.prototype.attachRenderer = function (
-    renderer: RenderWebGL
-  ) {
+  const _attachRenderer = vm.runtime.attachRenderer
+  vm.runtime.attachRenderer = function (renderer: RenderWebGL) {
     const originalRenderer = this.renderer
     // vm.runtime.constructor.prototype.attachRenderer = _attachRenderer
     _attachRenderer.call(this, renderer)
@@ -343,9 +363,9 @@ export default function patchRenderer(vm: VM) {
         const { clearAllSkins } = renderer as any
         onReady()
         // clearAllSkins() is used to dispose all skins. This API exists because Xiaomawang's developers have skill issue.
-        renderer.constructor.prototype.clearAllSkins = clearAllSkins
+        ;(renderer as any).clearAllSkins = clearAllSkins
         // extractDrawable() is used to extract the drawable (for dragging or something else). It slows down the renderer for a lot, so replace it with a no-op function would be fine.
-        renderer.constructor.prototype.extractDrawable = function () {
+        ;(renderer as any).extractDrawable = function () {
           return {
             data: '',
             x: 0,
@@ -366,6 +386,7 @@ export default function patchRenderer(vm: VM) {
           })
         }).observe(renderer.canvas)
       } else {
+        HTMLCanvasElement.prototype.getContext = _getContext
         onReady()
       }
     }

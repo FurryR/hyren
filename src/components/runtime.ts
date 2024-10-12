@@ -44,9 +44,7 @@ export default function patchRuntime(vm: VM) {
       value: 'TURBO_MODE_OFF',
       writable: false
     })
-  vm.runtime.constructor.prototype.setRuntimeOptions = function (
-    runtimeOptions: any
-  ) {
+  ;(vm.runtime as any).setRuntimeOptions = function (runtimeOptions: any) {
     this.runtimeOptions = Object.assign({}, this.runtimeOptions, runtimeOptions)
     this.emit(
       (vm.runtime.constructor as any).RUNTIME_OPTIONS_CHANGED,
@@ -61,7 +59,7 @@ export default function patchRuntime(vm: VM) {
     miscLimits: true,
     fencing: true
   })
-  vm.runtime.constructor.prototype.clonesAvailable = function () {
+  ;(vm.runtime as any).clonesAvailable = function () {
     return this._cloneCounter < this.runtimeOptions.maxClones
   }
   Object.defineProperty(vm.runtime, 'compatibilityMode', {
@@ -143,16 +141,15 @@ export default function patchRuntime(vm: VM) {
   patchTarget(vm)
   patchRenderer(vm)
   patchIO(vm)
-
-  runtime.constructor.prototype.emitCompileError = function (
+  ;(runtime as any).emitCompileError = function (
     target: VM.RenderedTarget,
     error: object
   ) {
     this.emit((runtime as any).constructor.COMPILE_ERROR, target, error)
   }
-  if (!runtime.constructor.prototype.getAddonBlock)
-    runtime.constructor.prototype.getAddonBlock = () => null
-  runtime.constructor.prototype.compilerRegisterExtension = function (
+  if (!(runtime as any).getAddonBlock)
+    (runtime as any).getAddonBlock = () => null
+  ;(runtime as any).compilerRegisterExtension = function (
     this: any,
     name: string,
     extensionObject: object
@@ -185,7 +182,7 @@ export default function patchRuntime(vm: VM) {
     this[`ext_${name}`] = extensionObject
   }
   const _registerBlockPackages = runtime._registerBlockPackages
-  runtime.constructor.prototype._registerBlockPackages = function (this: any) {
+  ;(runtime as any)._registerBlockPackages = function (this: any) {
     const _hasOwnProperty = Object.prototype.hasOwnProperty
     let defaultBlockPackages: any
     Object.prototype.hasOwnProperty = function () {
@@ -247,9 +244,7 @@ export default function patchRuntime(vm: VM) {
   }
   const _registerInternalExtension = (vm.extensionManager as any)
     ._registerInternalExtension
-  ;(
-    vm.extensionManager as any
-  ).constructor.prototype._registerInternalExtension = function (
+  ;(vm.extensionManager as any)._registerInternalExtension = function (
     extensionObject: any
   ): any {
     const extensionInfo = extensionObject.getInfo()
@@ -284,9 +279,9 @@ export default function patchRuntime(vm: VM) {
       this.resetCache()
     return _blocklyListen.call(this, e)
   }
-  if (runtime.constructor.prototype.allScriptsByOpcodeDo) {
-    const _startHats = runtime.constructor.prototype.startHats
-    runtime.constructor.prototype.startHats = function (
+  if (!!runtime.allScriptsByOpcodeDo) {
+    const _startHats = runtime.startHats
+    runtime.startHats = function (
       requestedHatOpcode: string,
       optMatchFields?: Record<string, string>,
       optTarget?: VM.Target
@@ -323,7 +318,7 @@ export default function patchRuntime(vm: VM) {
     this._cache.compiledProcedures = {}
     this._cache.proceduresPopulated = false
   }
-  runtime.constructor.prototype.resetAllCaches = function (this: VM.Runtime) {
+  ;(runtime as any).resetAllCaches = function (this: VM.Runtime) {
     for (const target of this.targets) {
       if (target.isOriginal) {
         target.blocks.resetCache()
@@ -332,7 +327,7 @@ export default function patchRuntime(vm: VM) {
     this.flyoutBlocks.resetCache()
     this.monitorBlocks.resetCache()
   }
-  runtime.constructor.prototype.precompile = function () {
+  ;(runtime as any).precompile = function () {
     this.allScriptsDo((topBlockId: string, target: VM.RenderedTarget) => {
       const topBlock = target.blocks.getBlock(topBlockId)
       if (this.getIsHat(topBlock!.opcode)) {
@@ -344,17 +339,15 @@ export default function patchRuntime(vm: VM) {
       }
     })
   }
-  runtime.constructor.prototype.enableDebug = function () {
+  ;(runtime as any).enableDebug = function () {
     this.resetAllCaches()
     this.debug = true
   }
-  vm.constructor.prototype.enableDebug = function () {
+  ;(vm as any).enableDebug = function () {
     this.runtime.enableDebug()
     return 'enabled debug mode'
   }
-  runtime.constructor.prototype.setCompilerOptions = function (
-    compilerOptions: object
-  ) {
+  ;(runtime as any).setCompilerOptions = function (compilerOptions: object) {
     this.compilerOptions = Object.assign(
       {},
       this.compilerOptions,
@@ -375,21 +368,20 @@ export default function patchRuntime(vm: VM) {
   })
   if (!vm.runtime.constructor.prototype.parseProjectOptions) {
     const COMMENT_CONFIG_MAGIC = ' // _twconfig_'
-    const _installTargets = vm.constructor.prototype.installTargets
-    vm.constructor.prototype.installTargets = function (
-      targets: object[],
-      extensions: object,
+    const _installTargets = vm.installTargets
+    ;(vm as any).installTargets = async function (
+      targets: VM.RenderedTarget[],
+      extensions: VM.ImportedExtensionsInfo,
       wholeProject: boolean
     ) {
       // ClipCC has a bug about vm.installTargets -- it didn't return a Promise.
       // TODO: remove this when clipcc new version is released.
-      return Promise.resolve(
+      await Promise.resolve(
         _installTargets.call(this, targets, extensions, wholeProject)
-      ).then(() => {
-        if (wholeProject) {
-          this.runtime.parseProjectOptions()
-        }
-      })
+      )
+      if (wholeProject) {
+        this.runtime.parseProjectOptions()
+      }
     }
     vm.runtime.constructor.prototype.findProjectOptionsComment = function () {
       const target = this.getTargetForStage()
@@ -491,30 +483,29 @@ export default function patchRuntime(vm: VM) {
       }
       this.emitProjectChanged()
     }
-    vm.runtime.constructor.prototype.generateDifferingProjectOptions =
-      function () {
-        const difference = (oldObject: any, newObject: any) => {
-          const result: any = {}
-          for (const key of Object.keys(newObject)) {
-            const newValue = newObject[key]
-            const oldValue = oldObject[key]
-            if (typeof newValue === 'object' && newValue) {
-              const valueDiffering = difference(oldValue, newValue)
-              if (Object.keys(valueDiffering).length > 0) {
-                result[key] = valueDiffering
-              }
-            } else if (newValue !== oldValue) {
-              result[key] = newValue
+    ;(runtime as any).generateDifferingProjectOptions = function () {
+      const difference = (oldObject: any, newObject: any) => {
+        const result: any = {}
+        for (const key of Object.keys(newObject)) {
+          const newValue = newObject[key]
+          const oldValue = oldObject[key]
+          if (typeof newValue === 'object' && newValue) {
+            const valueDiffering = difference(oldValue, newValue)
+            if (Object.keys(valueDiffering).length > 0) {
+              result[key] = valueDiffering
             }
+          } else if (newValue !== oldValue) {
+            result[key] = newValue
           }
-          return result
         }
-        return difference(
-          this._defaultStoredSettings,
-          this._generateAllProjectOptions()
-        )
+        return result
       }
-    vm.runtime.constructor.prototype._generateAllProjectOptions = function () {
+      return difference(
+        this._defaultStoredSettings,
+        this._generateAllProjectOptions()
+      )
+    }
+    ;(runtime as any)._generateAllProjectOptions = function () {
       return {
         framerate: this.frameLoop?.framerate ?? 30,
         runtimeOptions: this.runtimeOptions,
@@ -525,7 +516,7 @@ export default function patchRuntime(vm: VM) {
         height: this.stageHeight ?? (vm.runtime.constructor as any).STAGE_HEIGHT
       }
     }
-    vm.constructor.prototype.storeProjectOptions = function () {
+    ;(vm as any).storeProjectOptions = function () {
       this.runtime.storeProjectOptions()
       if (this.editingTarget.isStage) {
         this.emitWorkspaceUpdate()

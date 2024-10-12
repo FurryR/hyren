@@ -193,8 +193,7 @@ export default function patchThread(vm: VM): ExtendedThreadConstructor {
       thread.target.blocks.constructor as ExtendedBlockContainerConstructor
     )
     if ((thread as any).isCompiled) {
-      compilerExecute(thread)
-      return
+      return compilerExecute(thread)
     } else return _stepThread.call(this, thread)
   }
   return thread.constructor as ExtendedThreadConstructor

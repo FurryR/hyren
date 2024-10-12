@@ -51,6 +51,25 @@ export default function patchTarget(vm: VM) {
       }
       this.runtime.requestTargetsUpdate(this)
     }
+    const _addListener = Target.prototype.addListener
+    const _removeListener = Target.prototype.removeListener
+    Target.prototype.addListener = function (
+      event: string,
+      result: (...args: unknown[]) => unknown
+    ) {
+      if (event === (Target as any).EVENT_TARGET_MOVED) {
+        this.onTargetMoved = result
+      } else return _addListener.call(this, event, result)
+    }
+    Target.prototype.removeListener = function (
+      event: string,
+      result: (...args: unknown[]) => unknown
+    ) {
+      if (event === (Target as any).EVENT_TARGET_MOVED) {
+        this.onTargetMoved = null
+      } else return _removeListener.call(this, event, result)
+    }
+
     Target.prototype.setXY = function (x: number, y: number, force: boolean) {
       // used by compiler
       if (this.isStage) return
@@ -74,8 +93,7 @@ export default function patchTarget(vm: VM) {
       }
       if (this.onTargetMoved) {
         this.onTargetMoved(this, oldX, oldY, force)
-      } else
-        this.emit((Target as any).EVENT_TARGET_MOVED, this, oldX, oldY, force)
+      }
       this.runtime.requestTargetsUpdate(this)
     }
   }

@@ -2,7 +2,7 @@
 
 # [👾 Hyren](https://furryr.github.io/hyren/hyren.release.user.js)
 
-> A tampermonkey script to use Turbowarp features anywhere.
+> A tampermonkey script to use Turbowarp features everywhere.
 >
 > (Hint) Click title to install!
 
@@ -15,7 +15,7 @@
 
 ## 🐱 Features
 
-- ✅ Turbowarp features anywhere.
+- ✅ Turbowarp features everywhere.
 - ⭐ Always keep updated with Turbowarp.
 - 🤖 Requires no extra configuration.
 - 🛠️ Perfect compatibility with [`Eureka`](https://github.com/EurekaScratch/eureka-loader).
